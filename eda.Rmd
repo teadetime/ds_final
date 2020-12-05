@@ -98,13 +98,42 @@ df_column_rename <-
       )
 ```
 
+```{r}
+df_data <-
+  df_column_rename %>%
+    mutate(across(everything(), as_factor))
+
+df_data
+```
 
 ```{r}
-df_processed <-
-  df_column_rename %>%
-  pull(ppgender)
-
-df_processed
+df_data %>%
+  ggplot() +
+  
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
