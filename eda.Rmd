@@ -107,13 +107,30 @@ df_data
 ```
 
 ```{r}
-df_data %>%
-  ggplot() +
-  
+number_of_rows <-
+  df_data %>%
+    summarize(N = n())
+
+number_match <- 
+  df_data %>%
+      filter(as.character(tolower(partyid7)) == as.character(tolower(partner_polictial_belief))) %>%
+      summarize(N = n())
+
+number_match / number_of_rows
 ```
 
 
+```{r}
+number_of_rows <-
+  df_data %>%
+    summarize(N = n())
+number_match <- 
+  df_data %>%
+      filter(as.character(tolower(partner_education_level)) == as.character(tolower(ppeduc))) %>%
+      summarize(N = n())
 
+number_match / number_of_rows
+```
 
 
 
