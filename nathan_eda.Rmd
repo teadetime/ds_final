@@ -1,0 +1,203 @@
+---
+title: "HCSMT"
+output: html_document
+---
+
+Data from: https://data.stanford.edu/hcmst2017#download-data
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(haven)
+library(dplyr)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+df_raw <- read_dta(file = "./data/HCMST.dta")
+df_raw %>% summary()
+df_raw %>% head()
+```
+```{r question_relabel}
+#df_raw %>%
+#  colnames()
+
+df_column_rename <-
+  df_raw %>%
+    as.tibble() %>%
+    rename(
+      married = S1,
+      current_partner_status = S2,
+      ever_had_partner = S3,
+      partner_sex = Q4,
+      partner_same_sex = Q5,
+      partner_latino_hispanic = Q6A,
+      partner_race = Q6B,
+      partner_age = Q9,
+      partner_education_level = Q10,
+      partner_mother_education_level = Q11,
+      partner_polictial_belief = Q12,
+      your_mother_education_level = Q14,
+      #country_you_grew_up_in = Q15A1,
+      #state_you_grew_up_in = Q15A2,
+      #city_you_grew_up_in = Q15A3,
+      #your_country_met_partner = Q15A4,
+      #your_state_met_partner = Q15A5,
+      #your_city_met_partner = Q15A6,
+      met_partner_location = Q15A7,
+      number_relatives_you_visit = Q16,
+      times_married_inclusive = Q17A, # if S1=1
+      times_married = Q17B, # if S1=2
+      gender_sexually_attracted_to_1 = Q17C, # ppgender = 2
+      gender_sexually_attracted_to_2 = Q17D, #ppgender = 1
+      currently_living_with_partner = Q19,
+      ever_lived_together_w_partner = Q20,
+      date_met_year = Q21A_Year,
+      date_met_month = Q21A_Month,
+      date_relationship_began_year = Q21B_Year,
+      date_relationship_began_month = Q21B_Month,
+      date_first_lived_together_year = Q21C_Year,
+      date_first_lived_together_month = Q21C_Month,
+      date_married_year = Q21D_Year,
+      date_married_month = Q21D_Month,
+      sexual_orientation = w6_identity,
+      outness = w6_outness,
+      age_came_out = w6_outness_timing,
+      income_disparity = Q23,
+      #story_how_met = Q24,
+      same_high_school = Q25,
+      same_university = Q26,
+      grow_up_same_town = Q27,
+      parents_knew_each_other_before_met = Q28,
+      #mutual_friends_prior = w6_friend_connect,
+      met_online = Q32,
+      relationship_quality = Q34,
+      #realtionship_explaination = Q35,
+      sex_frequency = w6_sex_frequency,
+      other_date = w6_otherdate,
+      number_others_dated = w6_how_many, # how many other people met with besides partner
+      #how_met = w6_how_meet,
+      dating_app_met_other = w6_otherdate_app,
+      how_many_met_dating_app = w6_how_many_app,
+      #most_commonly_used_dating_app = Q40,
+      ever_married_to_partner = Past_Partner_Q1,
+      relationship_end_nonmar = w6_relationship_end_nonmar,
+      who_wanted_breakup_more_nonmar = w6_breakup_nonmar,
+      marriage_end_mar = w6_relationship_end_mar,
+      who_broke_up = w6_who_breakup,
+      #reason_break_up = w6_why_broke_up,
+      #partner_same_sex = Q5_2,
+      #partner_hispanic_latino = Q6A_2,
+      #year_partner_born = Q9B_2,
+      #highest_level_education_partner = Q10_2
+      )
+```
+
+```{r}
+# Lets deal with this weird Stata format using haven to ocnvert things into factors!!
+df_data <-
+  df_column_rename %>%
+    mutate(across(everything(), as_factor))
+
+df_data
+```
+
+```{r}
+number_of_rows <-
+  df_data %>%
+    summarize(N = n())
+
+
+## Lets do a quick check and see how many people had the same political beliefs on a 7 point spectrum
+number_match <- 
+  df_data %>%
+      filter(as.character(tolower(partyid7)) == as.character(tolower(partner_polictial_belief))) %>%
+      summarize(N = n())
+
+number_match / number_of_rows
+```
+
+
+```{r}
+number_of_rows <-
+  df_data %>%
+    summarize(N = n())
+number_match <- 
+  df_data %>%
+      filter(as.character(tolower(partner_education_level)) == as.character(tolower(ppeduc))) %>%
+      summarize(N = n())
+
+number_match / number_of_rows
+```
+
+NATHANS BIT
+
+Let's take a look at the gender makeup of the survey
+
+First lets convert some columns!!
+```{r}
+df_filtered <- df_data 
+levels(df_filtered$married)
+levels(df_filtered$ever_had_partner)
+levels(df_filtered$current_partner_status)
+levels(df_filtered$same_high_school)
+levels(df_filtered$same_university)
+``` 
+```{r}
+df_filtered <- df_data 
+# as.logical(!is.na(str_extract(df_filtered$married, "^Yes")))
+df_filtered$married <- ifelse(is.na(df_filtered$married) | df_filtered$married == "Refused" ,
+                              NA,
+                              as.logical(!is.na(str_extract(df_filtered$married, "^Yes"))))
+
+
+df_filtered$ever_had_partner <- ifelse(is.na(df_filtered$ever_had_partner) | df_filtered$ever_had_partner == "Refused" ,
+                              NA,
+                              as.logical(!is.na(str_extract(df_filtered$ever_had_partner, "^Yes"))))
+
+df_filtered$current_partner_status <- ifelse(is.na(df_filtered$current_partner_status) | df_filtered$ever_had_partner == "Refused",
+                                             NA,
+                                             as.logical(!is.na(str_extract(df_filtered$current_partner_status, "^Yes"))))
+
+df_filtered$partner_same_sex <- ifelse(is.na(df_filtered$partner_same_sex) | df_filtered$partner_same_sex == "Refused",
+                                             NA,
+                                             as.logical(!is.na(str_extract(df_filtered$partner_same_sex, "^Yes"))))
+
+# Encode Partner Sex as True for male and false for female
+df_filtered$partner_sex <- ifelse(is.na(df_filtered$partner_sex) | df_filtered$partner_sex == "Refused",
+                                              NA,
+                                              as.logical(!is.na(str_extract(df_filtered$partner_sex, "Male$"))))
+
+df_filtered$same_high_school <- ifelse(is.na(df_filtered$same_high_school) | df_filtered$same_high_school== "Refused",
+                                              NA,
+                                              as.logical(!is.na(str_extract(df_filtered$same_high_school, "^Same"))))
+
+
+df_filtered$same_university <- ifelse(is.na(df_filtered$same_university) | df_filtered$same_university== "Refused",
+                                              NA,
+                                              as.logical(!is.na(str_extract(df_filtered$same_university, "^Atten"))))
+
+df_filtered$parents_knew_each_other_before_met<- ifelse(is.na(df_filtered$parents_knew_each_other_before_met) | df_filtered$parents_knew_each_other_before_met == "Refused",
+                                             NA,
+                                             as.logical(!is.na(str_extract(df_filtered$parents_knew_each_other_before_met, "^Yes"))))
+
+df_filtered$grow_up_same_town <- ifelse(is.na(df_filtered$grow_up_same_town) | df_filtered$grow_up_same_town == "Refused",
+                                             NA,
+                                             as.logical(!is.na(str_extract(df_filtered$grow_up_same_town, "^Yes"))))
+
+df_filtered$other_date <- ifelse(is.na(df_filtered$other_date) | df_filtered$other_date == "Refused",
+                                             NA,
+                                             as.logical(!is.na(str_extract(df_filtered$other_date, "^Yes"))))
+df_filtered
+# df_data %>% 
+#   summarize(cnt_na = sum(is.na(ever_had_partner)),cnt_ref = sum(ever_had_partner == "Refused", na.rm = TRUE), cnt_yes = sum(ever_had_partner == "Yes", na.rm = TRUE),  cnt_no = sum(ever_had_partner == "No", na.rm = TRUE), cnt=n())
+# 
+
+
+```
+

@@ -1,0 +1,28 @@
+---
+title: "report"
+author: "Nathan Faber and Thomas Jagielski"
+date: 2020-11-27
+output:
+  github_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## How Couples meet
+
+### Background
+This project utilizes the HCMST (How Couples Meet and Stay Together) [https://data.stanford.edu/hcmst2017] This dataset was collected in 2017 and is made up of ~4,000 survey results from individuals 18+ that had been in a relationship previously. This survey is a remake of an earlier version of this survey with similar data. The data  contains a wide range of variables--all pertaining to the individual and their partner. Some examples of the data available include: Race, Religion, Level of Education, Sexual Orientation, How their relationship ended etc.
+
+The survey  does have several notable quirks. The survey separates out an LGB group that was specifically sampled for. The survey was orchestrated through a rewards platform (KnowledgeBase) in which participants were compensated. This could introduce some form of sample bias. There were specific measures taken to attempt to get a representative sample, for example, random dialing of telephone numbers, as well as using address based sampling.
+
+Given the above, this data source suits our purposes and will aid us in understanding which factors cause couples to stay together.
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
