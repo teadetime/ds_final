@@ -74,7 +74,10 @@ df_column_rename <-
       same_university = Q26,
       grow_up_same_town = Q27,
       parents_knew_each_other_before_met = Q28,
-      #mutual_friends_prior = w6_friend_connect,
+      mutual_friends_prior_1 = w6_friend_connect_1,
+      mutual_friends_prior_2 = w6_friend_connect_2,
+      mutual_friends_prior_3 = w6_friend_connect_3,
+      mutual_friends_prior_4 = w6_friend_connect_4,
       met_online = Q32,
       relationship_quality = Q34,
       #realtionship_explaination = Q35,
@@ -91,10 +94,55 @@ df_column_rename <-
       marriage_end_mar = w6_relationship_end_mar,
       who_broke_up = w6_who_breakup,
       #reason_break_up = w6_why_broke_up,
-      #partner_same_sex = Q5_2,
-      #partner_hispanic_latino = Q6A_2,
-      #year_partner_born = Q9B_2,
-      #highest_level_education_partner = Q10_2
+      partner_same_sex_2 = Q5_2,
+      partner_hispanic_latino_2 = Q6A_2,
+      year_partner_born_2 = Q9B_2,
+      partner_education_level_2 = Q10_2,
+      partner_mother_education_level_2 = Q11_2,
+      partner_polictial_belief_2 = Q12_2,
+      your_mother_education_level_2 = Q14_2,
+      #country_you_grew_up_in_2 = Q15A1_2,
+      #state_you_grew_up_in_2 = Q15A2_2,
+      #city_you_grew_up_in_2 = Q15A3_2,
+      #your_country_met_partner_2 = Q15A4_2,
+      #your_state_met_partner_2 = Q15A5_2,
+      #your_city_met_partner_2 = Q15A6_2,
+      met_partner_location_2 = Q15A7_2_1,
+      number_relatives_you_visit_2 = Q16_2,
+      times_married_2 = Q17B_2,
+      gender_sexually_attracted_to_1_2 = Q17C_2, # ppgender = 2
+      gender_sexually_attracted_to_2_2 = Q17D_2, #ppgender = 1
+      ever_lived_together_w_partner_2 = Q20_2,
+      date_met_year_2 = Q21A_2_Year,
+      date_met_month_2 = Q21A_2_Month,
+      date_relationship_began_year_2 = Q21B_2_Year,
+      date_relationship_began_month_2 = Q21B_2_Month,
+      date_first_lived_together_year_2 = Q21C_2_Year,
+      date_first_lived_together_month_2 = Q21C_2_Month,
+      date_married_year_2 = Q21D_2_Year,
+      date_married_month_2 = Q21D_2_Month,
+      date_broken_up_year_2 = Q21E_2_Year,
+      date_broken_up_month_2 = Q21E_2_Month,
+      date_partner_pass_year = Q21F_2_Year,
+      date_partner_pass_month = Q21F_2_Month,
+      sexual_orientation_2 = w6_identity_2,
+      outness_2 = w6_outness_2,
+      age_came_out_2 = w6_outness_timing_2,
+      income_disparity_2 = Q23_2,
+      #story_how_met_2 = Q24_2,
+      same_high_school_2 = Q25_2,
+      same_university_2 = Q26_2,
+      grow_up_same_town_2 = Q27_2,
+      parents_knew_each_other_before_met_2 = Q28_2,
+      mutual_friends_prior_1_2 = w6_friend_connect_2_1,
+      mutual_friends_prior_2_2 = w6_friend_connect_2_2,
+      mutual_friends_prior_3_2 = w6_friend_connect_2_3,
+      mutual_friends_prior_4_2 = w6_friend_connect_2_4,
+      met_online_2 = Q32_2,
+      other_date_2 = w6_otherdate_2,      
+      number_others_dated_2 = w6_how_many_2, # how many other people met with besides partner
+      dating_app_met_other_2 = w6_otherdate_app_2,
+      how_many_met_dating_app_2 = w6_how_many_app_2      
       )
 ```
 
@@ -133,12 +181,133 @@ number_match / number_of_rows
 ```
 
 
+```{r}
+df_filtered <- df_data 
+# as.logical(!is.na(str_extract(df_filtered$married, "^Yes")))
+df_filtered$married <- ifelse(is.na(df_filtered$married) | df_filtered$married == "Refused" ,
+                              NA,
+                              as.logical(!is.na(str_extract(df_filtered$married, "^Yes"))))
+
+
+df_filtered$ever_had_partner <- ifelse(is.na(df_filtered$ever_had_partner) | df_filtered$ever_had_partner == "Refused" ,
+                              NA,
+                              as.logical(!is.na(str_extract(df_filtered$ever_had_partner, "^Yes"))))
+
+#df_filtered$current_partner_status_simplified <- ifelse(is.na(df_filtered$current_partner_status) | df_filtered$ever_had_partner == "Refused",
+#                                             NA,
+#                                             as.logical(!is.na(str_extract(df_filtered$current_partner_status, "^Yes"))))
+
+df_filtered$partner_same_sex <- ifelse(is.na(df_filtered$partner_same_sex) | df_filtered$partner_same_sex == "Refused",
+                                             NA,
+                                             as.logical(!is.na(str_extract(df_filtered$partner_same_sex, "^Yes"))))
+
+# Encode Partner Sex as True for male and false for female
+df_filtered$partner_sex <- ifelse(is.na(df_filtered$partner_sex) | df_filtered$partner_sex == "Refused",
+                                              NA,
+                                              as.logical(!is.na(str_extract(df_filtered$partner_sex, "Male$"))))
+
+df_filtered$same_high_school <- ifelse(is.na(df_filtered$same_high_school) | df_filtered$same_high_school== "Refused",
+                                              NA,
+                                              as.logical(!is.na(str_extract(df_filtered$same_high_school, "^Same"))))
+
+
+df_filtered$same_university <- ifelse(is.na(df_filtered$same_university) | df_filtered$same_university== "Refused",
+                                              NA,
+                                              as.logical(!is.na(str_extract(df_filtered$same_university, "^Atten"))))
+
+df_filtered$parents_knew_each_other_before_met<- ifelse(is.na(df_filtered$parents_knew_each_other_before_met) | df_filtered$parents_knew_each_other_before_met == "Refused",
+                                             NA,
+                                             as.logical(!is.na(str_extract(df_filtered$parents_knew_each_other_before_met, "^Yes"))))
+
+df_filtered$grow_up_same_town <- ifelse(is.na(df_filtered$grow_up_same_town) | df_filtered$grow_up_same_town == "Refused",
+                                             NA,
+                                             as.logical(!is.na(str_extract(df_filtered$grow_up_same_town, "^Yes"))))
+
+df_filtered$other_date <- ifelse(is.na(df_filtered$other_date) | df_filtered$other_date == "Refused",
+                                             NA,
+                                             as.logical(!is.na(str_extract(df_filtered$other_date, "^Yes"))))
+df_filtered
+# df_data %>% 
+#   summarize(cnt_na = sum(is.na(ever_had_partner)),cnt_ref = sum(ever_had_partner == "Refused", na.rm = TRUE), cnt_yes = sum(ever_had_partner == "Yes", na.rm = TRUE),  cnt_no = sum(ever_had_partner == "No", na.rm = TRUE), cnt=n())
+# 
+
+```
+
+```{r}
+df_filtered %>%
+  sample_n(10) %>%
+  filter(!is.na(married)) %>%
+  ggplot() + 
+  geom_point(mapping = aes(x = CaseID, y = current_partner_status))
+
+
+df_filtered %>% 
+  filter(current_partner_status == "No, I am single, with no boyfriend, no girlfriend and no romantic or sexual partner")
+
+```
 
 
 
 
+```{r}
+number_of_rows <-
+  df_data %>%
+    filter(!is.na(who_wanted_breakup_more_nonmar)) %>%
+    summarize(N = n())
+
+males_want_break_up <- 
+  df_data %>%
+      #filter((who_wanted_breakup_more_nonmar == "I wanted to break up more") & (ppgender == 'Male')) %>%
+      #filter((who_wanted_breakup_more_nonmar == "[Partner Name] wanted to break up more") & (ppgender == 'Male')) %>%
+      filter((who_wanted_breakup_more_nonmar == "We both equally wanted to break up") & (ppgender == 'Male')) %>%      
+      summarize(N = n())
 
 
+females_want_break_up <- 
+  df_data %>%
+      #filter((who_wanted_breakup_more_nonmar == "I wanted to break up more") & (ppgender == 'Female')) %>%
+      #filter((who_wanted_breakup_more_nonmar == "[Partner Name] wanted to break up more") & (ppgender == 'Female')) %>%  
+      filter((who_wanted_breakup_more_nonmar == "We both equally wanted to break up") & (ppgender == 'Female')) %>%  
+      summarize(N = n())
+
+females_want_break_up
+
+males_want_break_up / number_of_rows
+females_want_break_up / number_of_rows
+
+```
+
+```{r}
+
+convert_political <- function(x) {
+  case_when(
+    x == 1 ~ "Strong Republican",
+    x == 2 ~ "Not Strong Republican",
+    x == 3 ~ "Leans Republican",
+    x == 4 ~ "Undecided/Independent/Other",
+    x == 5 ~ "Leans Democrat",
+    x == 6 ~ "Not Strong Democrat",
+    x == 7 ~ "Strong Democrat"
+  )
+}
+
+df_data %>%
+    filter(!is.na(partyid7) | !is.na(partner_polictial_belief)) %>%
+    mutate(partyid7 = convert_political(partyid7)) %>%
+  pull(partyid7)
+
+
+number_match <- 
+  df_data %>%
+    filter(!is.na(partyid7) | !is.na(partner_polictial_belief)) %>%
+    mutate(partyid7 = convert_political(partyid7), 
+           partner_polictial_belief = convert_political(partyid7),
+           political_diff = abs(partyid7 - partner_polictial_belief)) %>%
+    filter((political_diff < 2)) %>%
+    summarize(N = n())
+
+relationship_end_nonmar == "We broke up"
+```
 
 
 
