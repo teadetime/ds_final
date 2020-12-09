@@ -252,7 +252,17 @@ df_filtered %>%
 ```{r}
 number_of_rows <-
   df_data %>%
-    filter(!is.na(who_wanted_breakup_more_nonmar)) %>%
+    filter(!is.na(who_wanted_breakup_more_nonmar) & (ppgender == 'Male')) %>%
+    summarize(N = n())
+
+number_of_males <-
+  df_data %>%
+    filter(!is.na(who_wanted_breakup_more_nonmar) & (ppgender == 'Male')) %>%
+    summarize(N = n())
+
+number_of_females <-
+  df_data %>%
+    filter(!is.na(who_wanted_breakup_more_nonmar) & (ppgender == 'Female')) %>%
     summarize(N = n())
 
 males_want_break_up <- 
@@ -272,42 +282,150 @@ females_want_break_up <-
 
 females_want_break_up
 
-males_want_break_up / number_of_rows
-females_want_break_up / number_of_rows
+males_want_break_up / number_of_males
+females_want_break_up / number_of_females
 
 ```
 
 ```{r}
-
-convert_political <- function(x) {
-  case_when(
-    x == 1 ~ "Strong Republican",
-    x == 2 ~ "Not Strong Republican",
-    x == 3 ~ "Leans Republican",
-    x == 4 ~ "Undecided/Independent/Other",
-    x == 5 ~ "Leans Democrat",
-    x == 6 ~ "Not Strong Democrat",
-    x == 7 ~ "Strong Democrat"
-  )
-}
-
-df_data %>%
-    filter(!is.na(partyid7) | !is.na(partner_polictial_belief)) %>%
-    mutate(partyid7 = convert_political(partyid7)) %>%
-  pull(partyid7)
+numeric_political <-
+  df_data %>%
+    filter((!is.na(partyid7)) & (!is.na(partner_polictial_belief))) %>%
+    mutate(partner_polictial_belief = as.numeric(partner_polictial_belief) - 1,
+           partyid7 = as.numeric(partyid7) - 1) #%>%
+    #summarise(partyid7, partner_polictial_belief)
 
 
 number_match <- 
-  df_data %>%
-    filter(!is.na(partyid7) | !is.na(partner_polictial_belief)) %>%
-    mutate(partyid7 = convert_political(partyid7), 
-           partner_polictial_belief = convert_political(partyid7),
-           political_diff = abs(partyid7 - partner_polictial_belief)) %>%
-    filter((political_diff < 2)) %>%
-    summarize(N = n())
+  numeric_political %>%
+    mutate(political_diff = abs(partyid7 - partner_polictial_belief)) %>%
+    summarise(mean(political_diff))
+    #filter((political_diff > 2)) #& (relationship_end_nonmar == "We broke up")) #%>%
+    #summarize(N = n())
 
-relationship_end_nonmar == "We broke up"
+number_match
+
+numeric_political
+
+#relationship_end_nonmar == "We broke up"
 ```
+
+
+```{r}
+df_data %>%
+  filter(!is.na(relationship_quality)) %>%
+  mutate(relationship_quality = as.numeric(relationship_quality) - 1) %>%
+  #filter(married == "Yes, I am Married") %>%
+  filter(married == "No, I am not Married") %>%
+  summarize(mean(relationship_quality))
+
+
+#levels(df_data$relationship_end_nonmar)
+```
+
+```{r}
+library(ggcorrplot)
+library(corrplot)
+```
+
+
+```{r}
+data <-
+  df_data %>%
+    filter(!is.na(relationship_quality) & 
+             !is.na(married) & 
+             !is.na(partyid7) & 
+             !is.na(partner_polictial_belief) & 
+             !is.na(currently_living_with_partner) &
+             !is.na(date_relationship_began_month) &
+             !is.na(grow_up_same_town) &
+             !is.na(met_online)) %>%
+  
+    mutate(relationship_quality = as.numeric(relationship_quality) - 1,
+           married = as.numeric(married) - 1,
+           partner_polictial_belief = as.numeric(partner_polictial_belief) - 1,
+           partyid7 = as.numeric(partyid7) - 1,
+           political_diff = abs(partyid7 - partner_polictial_belief),
+           currently_living_with_partner = as.numeric(currently_living_with_partner) - 1,
+           date_relationship_began_month = as.numeric(date_relationship_began_month) - 1,
+           grow_up_same_town = as.numeric(grow_up_same_town) - 1,
+           met_online = as.numeric(met_online) - 1)
+
+data[ ,c("relationship_quality", 
+         "married", 
+         "political_diff", 
+         "currently_living_with_partner",
+         "date_relationship_began_month",
+         "grow_up_same_town",
+         "met_online")] %>%
+  cor(method = c("pearson", "kendall", "spearman")) %>%
+  round(5) %>%
+  ggcorrplot(show.diag = T, type = "full", lab = TRUE, lab_size = 2)
+```
+
+
+```{r}
+data <-
+  df_data %>%
+    filter(#!is.na(relationship_quality) & 
+             !is.na(marriage_end_mar) &
+             !is.na(partyid7) & 
+             !is.na(partner_polictial_belief_2) & 
+             #!is.na(currently_living_with_partner) &
+             #!is.na(date_relationship_began_month))
+             !is.na(grow_up_same_town_2) &
+             !is.na(met_online_2)) %>%
+  
+    mutate(partner_polictial_belief = as.numeric(partner_polictial_belief_2) - 1,
+           partyid7 = as.numeric(partyid7) - 1,
+           political_diff = abs(partyid7 - partner_polictial_belief),
+           grow_up_same_town = as.numeric(grow_up_same_town_2) - 1,
+           met_online = as.numeric(met_online_2) - 1,
+           marriage_end_mar = as.numeric(marriage_end_mar))
+
+data[ ,c("marriage_end_mar", 
+         "political_diff", 
+         "grow_up_same_town",
+         "met_online")] %>%
+  cor(method = c("pearson", "kendall", "spearman")) %>%
+  round(5) %>%
+  ggcorrplot(show.diag = T, type = "full", lab = TRUE, lab_size = 2)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
