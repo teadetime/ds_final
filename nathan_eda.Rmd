@@ -124,9 +124,6 @@ number_match / number_of_rows
 
 
 ```{r}
-number_of_rows <-
-  df_data %>%
-    summarize(N = n())
 number_match <- 
   df_data %>%
       filter(as.character(tolower(partner_education_level)) == as.character(tolower(ppeduc))) %>%
@@ -193,11 +190,110 @@ df_filtered$grow_up_same_town <- ifelse(is.na(df_filtered$grow_up_same_town) | d
 df_filtered$other_date <- ifelse(is.na(df_filtered$other_date) | df_filtered$other_date == "Refused",
                                              NA,
                                              as.logical(!is.na(str_extract(df_filtered$other_date, "^Yes"))))
+df_filtered$consent <- ifelse(is.na(df_filtered$consent) | df_filtered$consent == "Refused",
+                                             NA,
+                                             as.logical(!is.na(str_extract(df_filtered$consent, "^Yes"))))
+df_filtered$qflag <- as.logical(df_filtered$qflag=="Qualified")
 df_filtered
+
 # df_data %>% 
 #   summarize(cnt_na = sum(is.na(ever_had_partner)),cnt_ref = sum(ever_had_partner == "Refused", na.rm = TRUE), cnt_yes = sum(ever_had_partner == "Yes", na.rm = TRUE),  cnt_no = sum(ever_had_partner == "No", na.rm = TRUE), cnt=n())
 # 
 
 
 ```
+```{r}
+df_filtered %>%
+  filter(qflag, consent) %>% 
+  ggplot(aes(x=sex_frequency, fill = partner_sex)) +
+  geom_bar()
+df_filtered %>%
+  filter(qflag, consent) %>% 
+  ggplot(aes(x=sex_frequency, fill = married)) +
+  geom_bar()
+
+
+```
+```{r}
+eval_results <- function(true, predicted, df) {
+  SSE <- sum((predicted - true)^2)
+  SST <- sum((true - mean(true))^2)
+  R_square <- 1 - SSE / SST
+  RMSE = sqrt(SSE/nrow(df))
+  # Model performance metrics
+data.frame(
+  RMSE = RMSE,
+  Rsquare = R_square
+)
+  
+}
+```
+
+
+```{r}
+# Loading the library
+library(glmnet)
+# Loading the data
+data(swiss)
+
+x_vars <- model.matrix(Fertility~. , swiss)[,-1]
+y_var <- swiss$Fertility
+lambda_seq <- 10^seq(2, -2, by = -.05)
+ 
+# Splitting the data into test and train
+set.seed(87)
+train = sample(1:nrow(x_vars), nrow(x_vars)/2)
+x_test = (-train)
+y_test = y_var[x_test]
+ 
+cv_output <- cv.glmnet(x_vars[train,], y_var[train],
+                       alpha = 1, lambda = lambda_seq, 
+                       nfolds = 5)
+ 
+# identifying best lamda
+best_lam <- cv_output$lambda.min
+best_lam
+plot(cv_output, xvar="lambda")
+```
+
+```{r}
+# Rebuilding the model with best lamda value identified
+lasso_best <- glmnet(x_vars[train,], y_var[train], alpha = 1, lambda = .01)
+pred <- predict(lasso_best, s = best_lam, newx = x_vars[x_test,])
+
+coef(lasso_best)
+```
+
+```{r}
+final <- cbind(y_var[x_test], pred)
+# Checking the first six obs
+final
+head(swiss)
+```
+
+
+```{r}
+# TRYING TI ON OUR BIG DATSET
+# Loading the data
+data(swiss)
+
+x_vars <- model.matrix(Fertility~. , swiss)[,-1]
+y_var <- swiss$Fertility
+lambda_seq <- 10^seq(2, -2, by = -.05)
+```
+
+
+```{r}
+# Splitting the data into test and train
+set.seed(87)
+train = sample(1:nrow(x_vars), nrow(x_vars)/2)
+x_test = (-train)
+y_test = y_var[x_test]
+ 
+cv_output <- cv.glmnet(x_vars[train,], y_var[train],
+                       alpha = 1, lambda = lambda_seq, 
+                       nfolds = 5
+```
+
+
 

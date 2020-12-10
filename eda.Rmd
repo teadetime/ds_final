@@ -393,6 +393,22 @@ data[ ,c("marriage_end_mar",
 ```
 
 
+```{r}
+tbl_vars(df_filtered)
+```
+
+
+```{r}
+# Lets merge the columns for people who got divorced and those who didn't
+df_of_interest <- df_filtered %>% 
+  filter(married | ever_had_partner) %>% 
+  select(married, ever_had_partner, gender_sexually_attracted_to_1, gender_sexually_attracted_to_2, gender_sexually_attracted_to_1_2, gender_sexually_attracted_to_2_2) %>% 
+  unite("gender_sexually_attracted_to", gender_sexually_attracted_to_1, gender_sexually_attracted_to_2, gender_sexually_attracted_to_1_2, gender_sexually_attracted_to_2_2, na.rm = TRUE, remove = T)
+df_of_interest
+```
+
+
+
 
 
 
