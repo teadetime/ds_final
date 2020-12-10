@@ -402,8 +402,17 @@ tbl_vars(df_filtered)
 # Lets merge the columns for people who got divorced and those who didn't
 df_of_interest <- df_filtered %>% 
   filter(married | ever_had_partner) %>% 
-  select(married, ever_had_partner, gender_sexually_attracted_to_1, gender_sexually_attracted_to_2, gender_sexually_attracted_to_1_2, gender_sexually_attracted_to_2_2) %>% 
-  unite("gender_sexually_attracted_to", gender_sexually_attracted_to_1, gender_sexually_attracted_to_2, gender_sexually_attracted_to_1_2, gender_sexually_attracted_to_2_2, na.rm = TRUE, remove = T)
+  
+  unite("gender_sexually_attracted_to", gender_sexually_attracted_to_1, gender_sexually_attracted_to_2, gender_sexually_attracted_to_1_2, gender_sexually_attracted_to_2_2, na.rm = TRUE, remove = F) %>% 
+
+  unite("mutual_friends_prior_1", mutual_friends_prior_1, mutual_friends_prior_1_2, na.rm = TRUE, remove = F) %>% 
+
+  unite("mutual_friends_prior_2", mutual_friends_prior_2, mutual_friends_prior_2_2, na.rm = TRUE, remove = F) %>% 
+  unite("mutual_friends_prior_3", mutual_friends_prior_3, mutual_friends_prior_3_2, na.rm = TRUE, remove = F) %>% 
+  unite("mutual_friends_prior_4", mutual_friends_prior_4, mutual_friends_prior_4_2, na.rm = TRUE, remove = F) %>% 
+  
+select(married, ever_had_partner, gender_sexually_attracted_to, mutual_friends_prior_1, mutual_friends_prior_2, mutual_friends_prior_3, mutual_friends_prior_4)
+
 df_of_interest
 ```
 
