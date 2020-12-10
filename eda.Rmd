@@ -196,10 +196,14 @@ df_filtered$ever_had_partner <- ifelse(is.na(df_filtered$ever_had_partner) | df_
 #df_filtered$current_partner_status_simplified <- ifelse(is.na(df_filtered$current_partner_status) | df_filtered$ever_had_partner == "Refused",
 #                                             NA,
 #                                             as.logical(!is.na(str_extract(df_filtered$current_partner_status, "^Yes"))))
-
-df_filtered$partner_same_sex <- ifelse(is.na(df_filtered$partner_same_sex) | df_filtered$partner_same_sex == "Refused",
-                                             NA,
-                                             as.logical(!is.na(str_extract(df_filtered$partner_same_sex, "^Yes"))))
+# 
+# df_filtered$partner_same_sex <- ifelse(is.na(df_filtered$partner_same_sex) | df_filtered$partner_same_sex == "Refused",
+#                                              NA,
+#                                              as.logical(!is.na(str_extract(df_filtered$partner_same_sex, "^Yes"))))
+# 
+# df_filtered$partner_same_sex_2 <- ifelse(is.na(df_filtered$partner_same_sex_2) | df_filtered$partner_same_sex_2 == "Refused",
+#                                              NA,
+#                                              as.logical(!is.na(str_extract(df_filtered$partner_same_sex_2, "^Yes"))))
 
 # Encode Partner Sex as True for male and false for female
 df_filtered$partner_sex <- ifelse(is.na(df_filtered$partner_sex) | df_filtered$partner_sex == "Refused",
@@ -215,6 +219,16 @@ df_filtered$same_university <- ifelse(is.na(df_filtered$same_university) | df_fi
                                               NA,
                                               as.logical(!is.na(str_extract(df_filtered$same_university, "^Atten"))))
 
+df_filtered$same_high_school_2 <- ifelse(is.na(df_filtered$same_high_school_2) | df_filtered$same_high_school_2== "Refused",
+                                              NA,
+                                              as.logical(!is.na(str_extract(df_filtered$same_high_school_2, "^Same"))))
+
+
+df_filtered$same_university_2 <- ifelse(is.na(df_filtered$same_university_2) | df_filtered$same_university_2== "Refused",
+                                              NA,
+                                              as.logical(!is.na(str_extract(df_filtered$same_university_2, "^Atten"))))
+
+
 df_filtered$parents_knew_each_other_before_met<- ifelse(is.na(df_filtered$parents_knew_each_other_before_met) | df_filtered$parents_knew_each_other_before_met == "Refused",
                                              NA,
                                              as.logical(!is.na(str_extract(df_filtered$parents_knew_each_other_before_met, "^Yes"))))
@@ -226,6 +240,9 @@ df_filtered$grow_up_same_town <- ifelse(is.na(df_filtered$grow_up_same_town) | d
 df_filtered$other_date <- ifelse(is.na(df_filtered$other_date) | df_filtered$other_date == "Refused",
                                              NA,
                                              as.logical(!is.na(str_extract(df_filtered$other_date, "^Yes"))))
+df_filtered$other_date_2 <- ifelse(is.na(df_filtered$other_date_2) | df_filtered$other_date_2 == "Refused",
+                                             NA,
+                                             as.logical(!is.na(str_extract(df_filtered$other_date_2, "^Yes"))))
 df_filtered
 # df_data %>% 
 #   summarize(cnt_na = sum(is.na(ever_had_partner)),cnt_ref = sum(ever_had_partner == "Refused", na.rm = TRUE), cnt_yes = sum(ever_had_partner == "Yes", na.rm = TRUE),  cnt_no = sum(ever_had_partner == "No", na.rm = TRUE), cnt=n())
@@ -403,15 +420,74 @@ tbl_vars(df_filtered)
 df_of_interest <- df_filtered %>% 
   filter(married | ever_had_partner) %>% 
   
-  unite("gender_sexually_attracted_to", gender_sexually_attracted_to_1, gender_sexually_attracted_to_2, gender_sexually_attracted_to_1_2, gender_sexually_attracted_to_2_2, na.rm = TRUE, remove = F) %>% 
+  unite("gender_sexually_attracted_to", gender_sexually_attracted_to_1, gender_sexually_attracted_to_2, gender_sexually_attracted_to_1_2, gender_sexually_attracted_to_2_2, na.rm = TRUE, remove = F) %>%
 
-  unite("mutual_friends_prior_1", mutual_friends_prior_1, mutual_friends_prior_1_2, na.rm = TRUE, remove = F) %>% 
+  unite("mutual_friends_prior_1", mutual_friends_prior_1, mutual_friends_prior_1_2, na.rm = TRUE, remove = F) %>%
 
-  unite("mutual_friends_prior_2", mutual_friends_prior_2, mutual_friends_prior_2_2, na.rm = TRUE, remove = F) %>% 
-  unite("mutual_friends_prior_3", mutual_friends_prior_3, mutual_friends_prior_3_2, na.rm = TRUE, remove = F) %>% 
-  unite("mutual_friends_prior_4", mutual_friends_prior_4, mutual_friends_prior_4_2, na.rm = TRUE, remove = F) %>% 
-  
-select(married, ever_had_partner, gender_sexually_attracted_to, mutual_friends_prior_1, mutual_friends_prior_2, mutual_friends_prior_3, mutual_friends_prior_4)
+  unite("mutual_friends_prior_2", mutual_friends_prior_2, mutual_friends_prior_2_2, na.rm = TRUE, remove = F) %>%
+  unite("mutual_friends_prior_3", mutual_friends_prior_3, mutual_friends_prior_3_2, na.rm = TRUE, remove = F) %>%
+  unite("mutual_friends_prior_4", mutual_friends_prior_4, mutual_friends_prior_4_2, na.rm = TRUE, remove = F) %>%
+  unite("partner_education_level", partner_education_level, partner_education_level_2, na.rm = TRUE, remove = F) %>%
+  unite("times_married", times_married_inclusive, times_married_2, na.rm = TRUE, remove = F) %>%
+  unite("ever_lived_together_w_partner", ever_lived_together_w_partner, ever_lived_together_w_partner_2, currently_living_with_partner, na.rm = TRUE, remove = F) %>%
+  unite("same_high_school", same_high_school, same_high_school_2, na.rm = TRUE, remove = F) %>%
+  unite("same_university", same_university, same_university_2, na.rm = TRUE, remove = F) %>%
+  unite("met_online", met_online, met_online_2, na.rm = TRUE, remove = F) %>%
+  unite("sexual_orientation", sexual_orientation, sexual_orientation_2, na.rm = TRUE, remove = F) %>%
+  unite("partner_polictial_belief", partner_polictial_belief, partner_polictial_belief_2, na.rm = TRUE, remove = F) %>%
+  unite("grow_up_same_town", grow_up_same_town, grow_up_same_town_2, na.rm = TRUE, remove = F) %>%
+  unite("other_date", other_date, other_date_2, na.rm = TRUE, remove = F) %>%
+#   "relationship_end_nonmar"             
+#  [71] "who_wanted_breakup_more_nonmar"       "marriage_end_mar"                    
+#  [73] "who_broke_up"                         "partner_same_sex_2"                  
+#  [75] "partner_hispanic_latino_2"            "year_partner_born_2"                 
+#  [77] "partner_education_level_2"            "partner_mother_education_level_2"    
+#  [79] "partner_polictial_belief_2"           "your_mother_education_level_2"       
+#  [81] "met_partner_location_2"               "number_relatives_you_visit_2"        
+#  [83] "Q16_2_Codes"                          "times_married_2"                     
+#  [85] "gender_sexually_attracted_to_1_2"     "gender_sexually_attracted_to_2_2"    
+#  [87] "ever_lived_together_w_partner_2"      "date_met_year_2"                     
+#  [89] "date_met_month_2"                     "date_relationship_began_year_2"      
+#  [91] "date_relationship_began_month_2"      "date_first_lived_together_year_2"    
+#  [93] "date_first_lived_together_month_2"    "date_married_year_2"                 
+#  [95] "date_married_month_2"                 "date_broken_up_year_2"               
+#  [97] "date_broken_up_month_2"               "Q21F_2_start_range"                  
+#  [99] "date_partner_pass_year"               "date_partner_pass_month"             
+# [101] "sexual_orientation_2"                 "outness_2"                           
+# [103] "age_came_out_2"                       "income_disparity_2"                  
+# [105] "same_high_school_2"                   "same_university_2"                   
+# [107] "grow_up_same_town_2"                  "parents_knew_each_other_before_met_2"
+# [109] "mutual_friends_prior_1_2"             "mutual_friends_prior_2_2"            
+# [111] "mutual_friends_prior_3_2"             "mutual_friends_prior_4_2"            
+# [113] "w6_friend_connect_2_Refused"          "met_online_2"                        
+# [115] "other_date_2"                         "number_others_dated_2"               
+# [117] "dating_app_met_other_2"               "how_many_met_dating_app_2"  
+select(married,
+       ever_had_partner,
+       age_when_met,
+       partnership_status,
+       other_date,
+       grow_up_same_town,
+       partner_polictial_belief,
+       sexual_orientation,
+       met_online,
+       same_high_school,
+       same_university,
+       who_broke_up,
+       times_married,
+       partner_education_level, 
+       xlgb ,
+       w6_same_sex_couple,
+       gender_sexually_attracted_to,
+       mutual_friends_prior_1,
+       mutual_friends_prior_2,
+       mutual_friends_prior_3,
+       mutual_friends_prior_4,
+       
+       
+       relationship_end_nonmar,
+       marriage_end_mar,
+       ever_lived_together_w_partner)
 
 df_of_interest
 ```
