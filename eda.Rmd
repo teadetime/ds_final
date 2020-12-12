@@ -216,19 +216,6 @@ df_filtered$ever_had_partner <- ifelse(is.na(df_filtered$ever_had_partner) | df_
                               NA,
                               as.logical(!is.na(str_extract(df_filtered$ever_had_partner, "^Yes"))))
 
-#df_filtered$current_partner_status_simplified <- ifelse(is.na(df_filtered$current_partner_status) | df_filtered$ever_had_partner == "Refused",
-#                                             NA,
-#                                             as.logical(!is.na(str_extract(df_filtered$current_partner_status, "^Yes"))))
-# 
-# df_filtered$partner_same_sex <- ifelse(is.na(df_filtered$partner_same_sex) | df_filtered$partner_same_sex == "Refused",
-#                                              NA,
-#                                              as.logical(!is.na(str_extract(df_filtered$partner_same_sex, "^Yes"))))
-# 
-# df_filtered$partner_same_sex_2 <- ifelse(is.na(df_filtered$partner_same_sex_2) | df_filtered$partner_same_sex_2 == "Refused",
-#                                              NA,
-#                                              as.logical(!is.na(str_extract(df_filtered$partner_same_sex_2, "^Yes"))))
-
-# Encode Partner Sex as True for male and false for female
 df_filtered$partner_sex <- ifelse(is.na(df_filtered$partner_sex) | df_filtered$partner_sex == "Refused",
                                               NA,
                                               as.logical(!is.na(str_extract(df_filtered$partner_sex, "Male$"))))
@@ -267,9 +254,7 @@ df_filtered$other_date_2 <- ifelse(is.na(df_filtered$other_date_2) | df_filtered
                                              NA,
                                              as.logical(!is.na(str_extract(df_filtered$other_date_2, "^Yes"))))
 df_filtered
-# df_data %>% 
-#   summarize(cnt_na = sum(is.na(ever_had_partner)),cnt_ref = sum(ever_had_partner == "Refused", na.rm = TRUE), cnt_yes = sum(ever_had_partner == "Yes", na.rm = TRUE),  cnt_no = sum(ever_had_partner == "No", na.rm = TRUE), cnt=n())
-# 
+
 
 ```
 
@@ -278,14 +263,15 @@ df_filtered
 
 ```{r}
 df_filtered <- df_filtered %>%
-  filter(married | ever_had_partner) %>% 
+  filter(married | ever_had_partner | !is.na(str_extract(current_partner_status, "^Yes"))   ) %>% 
   mutate(ever_married = coalesce(times_married_inclusive, times_married, times_married_2)) %>%
   mutate(has_married = if_else(ever_married== "Never married" , FALSE, TRUE))  %>%
   # Now look if marriage ended
   mutate(end = coalesce(relationship_end_nonmar,marriage_end_mar)) %>%
-  mutate(ended = if_else(married == TRUE | !is.na(str_extract(end, "deceased$")), FALSE, TRUE )) 
-# %>% 
-  #select(married,has_married, ended, relationship_end_nonmar,marriage_end_mar)
+  mutate(ended = if_else(married == TRUE | !is.na(str_extract(current_partner_status, "^Yes")) | !is.na(str_extract(end, "deceased$")), FALSE, TRUE )) 
+
+df_filtered %>% 
+  select(married,has_married, current_partner_status, ended)
 ```
 
 
