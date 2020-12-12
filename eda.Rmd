@@ -273,81 +273,19 @@ df_filtered
 
 ```
 
-```{r}
-df_filtered %>%
-  sample_n(10) %>%
-  filter(!is.na(married)) %>%
-  ggplot() + 
-  geom_point(mapping = aes(x = CaseID, y = current_partner_status))
-
-
-df_filtered %>% 
-  filter(current_partner_status == "No, I am single, with no boyfriend, no girlfriend and no romantic or sexual partner")
-
-```
-
 
 
 
 ```{r}
-number_of_rows <-
-  df_data %>%
-    filter(!is.na(who_wanted_breakup_more_nonmar) & (ppgender == 'Male')) %>%
-    summarize(N = n())
-
-number_of_males <-
-  df_data %>%
-    filter(!is.na(who_wanted_breakup_more_nonmar) & (ppgender == 'Male')) %>%
-    summarize(N = n())
-
-number_of_females <-
-  df_data %>%
-    filter(!is.na(who_wanted_breakup_more_nonmar) & (ppgender == 'Female')) %>%
-    summarize(N = n())
-
-males_want_break_up <- 
-  df_data %>%
-      #filter((who_wanted_breakup_more_nonmar == "I wanted to break up more") & (ppgender == 'Male')) %>%
-      #filter((who_wanted_breakup_more_nonmar == "[Partner Name] wanted to break up more") & (ppgender == 'Male')) %>%
-      filter((who_wanted_breakup_more_nonmar == "We both equally wanted to break up") & (ppgender == 'Male')) %>%      
-      summarize(N = n())
-
-
-females_want_break_up <- 
-  df_data %>%
-      #filter((who_wanted_breakup_more_nonmar == "I wanted to break up more") & (ppgender == 'Female')) %>%
-      #filter((who_wanted_breakup_more_nonmar == "[Partner Name] wanted to break up more") & (ppgender == 'Female')) %>%  
-      filter((who_wanted_breakup_more_nonmar == "We both equally wanted to break up") & (ppgender == 'Female')) %>%  
-      summarize(N = n())
-
-females_want_break_up
-
-males_want_break_up / number_of_males
-females_want_break_up / number_of_females
-
-```
-
-```{r}
-numeric_political <-
-  df_data %>%
-    filter((!is.na(partyid7)) & (!is.na(partner_polictial_belief))) %>%
-    mutate(partner_polictial_belief = as.numeric(partner_polictial_belief) - 1,
-           partyid7 = as.numeric(partyid7) - 1) #%>%
-    #summarise(partyid7, partner_polictial_belief)
-
-
-number_match <- 
-  numeric_political %>%
-    mutate(political_diff = abs(partyid7 - partner_polictial_belief)) %>%
-    summarise(mean(political_diff))
-    #filter((political_diff > 2)) #& (relationship_end_nonmar == "We broke up")) #%>%
-    #summarize(N = n())
-
-number_match
-
-numeric_political
-
-#relationship_end_nonmar == "We broke up"
+df_filtered <- df_filtered %>%
+  filter(married | ever_had_partner) %>% 
+  mutate(ever_married = coalesce(times_married_inclusive, times_married, times_married_2)) %>%
+  mutate(has_married = if_else(ever_married== "Never married" , FALSE, TRUE))  %>%
+  # Now look if marriage ended
+  mutate(end = coalesce(relationship_end_nonmar,marriage_end_mar)) %>%
+  mutate(ended = if_else(married == TRUE | !is.na(str_extract(end, "deceased$")), FALSE, TRUE )) 
+# %>% 
+  #select(married,has_married, ended, relationship_end_nonmar,marriage_end_mar)
 ```
 
 
@@ -358,7 +296,9 @@ tbl_vars(df_filtered)
 df_filtered %>%
   mutate(column = coalesce(ever_lived_together_w_partner, ever_lived_together_w_partner_2, currently_living_with_partner)) %>%
   select(column, ever_lived_together_w_partner, ever_lived_together_w_partner_2, currently_living_with_partner)
+
 ```
+
 
 
 ```{r}
@@ -383,33 +323,11 @@ df_of_interest <- df_filtered %>%
   unite("partner_polictial_belief", partner_polictial_belief, partner_polictial_belief_2, na.rm = TRUE, remove = F) %>%
   unite("grow_up_same_town", grow_up_same_town, grow_up_same_town_2, na.rm = TRUE, remove = F) %>%
   unite("other_date", other_date, other_date_2, na.rm = TRUE, remove = F) %>%
-#   "relationship_end_nonmar"             
-#  [71] "who_wanted_breakup_more_nonmar"       "marriage_end_mar"                    
-#  [73] "who_broke_up"                         "partner_same_sex_2"                  
-#  [75] "partner_hispanic_latino_2"            "year_partner_born_2"                 
-#  [77] "partner_education_level_2"            "partner_mother_education_level_2"    
-#  [79] "partner_polictial_belief_2"           "your_mother_education_level_2"       
-#  [81] "met_partner_location_2"               "number_relatives_you_visit_2"        
-#  [83] "Q16_2_Codes"                          "times_married_2"                     
-#  [85] "gender_sexually_attracted_to_1_2"     "gender_sexually_attracted_to_2_2"    
-#  [87] "ever_lived_together_w_partner_2"      "date_met_year_2"                     
-#  [89] "date_met_month_2"                     "date_relationship_began_year_2"      
-#  [91] "date_relationship_began_month_2"      "date_first_lived_together_year_2"    
-#  [93] "date_first_lived_together_month_2"    "date_married_year_2"                 
-#  [95] "date_married_month_2"                 "date_broken_up_year_2"               
-#  [97] "date_broken_up_month_2"               "Q21F_2_start_range"                  
-#  [99] "date_partner_pass_year"               "date_partner_pass_month"             
-# [101] "sexual_orientation_2"                 "outness_2"                           
-# [103] "age_came_out_2"                       "income_disparity_2"                  
-# [105] "same_high_school_2"                   "same_university_2"                   
-# [107] "grow_up_same_town_2"                  "parents_knew_each_other_before_met_2"
-# [109] "mutual_friends_prior_1_2"             "mutual_friends_prior_2_2"            
-# [111] "mutual_friends_prior_3_2"             "mutual_friends_prior_4_2"            
-# [113] "w6_friend_connect_2_Refused"          "met_online_2"                        
-# [115] "other_date_2"                         "number_others_dated_2"               
-# [117] "dating_app_met_other_2"               "how_many_met_dating_app_2"  
 select(married,
        ever_had_partner,
+       relationship_end_nonmar,
+       marriage_end_mar,
+       ever_lived_together_w_partner,
        age_when_met,
        partnership_status,
        other_date,
@@ -433,9 +351,7 @@ select(married,
        partyid7,
        
        
-       relationship_end_nonmar,
-       marriage_end_mar,
-       ever_lived_together_w_partner)
+       )
 
 df_of_interest
 ```
