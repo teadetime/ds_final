@@ -39,6 +39,8 @@ The survey  does have several notable quirks. The survey separates out an LGB gr
 
 Given the above, this data source suits our purposes and will aid us in understanding which factors cause couples to stay together.
 
+### EDA
+
 ### Correlation Matrix for Predictive Factors
 ```{r load_data}
 df_raw <- read_dta(file = "./data/HCMST.dta")
