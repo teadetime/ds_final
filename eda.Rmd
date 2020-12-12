@@ -243,9 +243,9 @@ df_filtered$parents_knew_each_other_before_met<- ifelse(is.na(df_filtered$parent
                                              NA,
                                              as.logical(!is.na(str_extract(df_filtered$parents_knew_each_other_before_met, "^Yes"))))
 
-df_filtered$grow_up_same_town <- ifelse(is.na(df_filtered$grow_up_same_town) | df_filtered$grow_up_same_town == "Refused",
-                                             NA,
-                                             as.logical(!is.na(str_extract(df_filtered$grow_up_same_town, "^Yes"))))
+# df_filtered$grow_up_same_town <- ifelse(is.na(df_filtered$grow_up_same_town) | df_filtered$grow_up_same_town == "Refused",
+#                                              NA,
+#                                              as.logical(!is.na(str_extract(df_filtered$grow_up_same_town, "^Yes"))))
 
 df_filtered$other_date <- ifelse(is.na(df_filtered$other_date) | df_filtered$other_date == "Refused",
                                              NA,
@@ -271,45 +271,32 @@ df_filtered <- df_filtered %>%
   mutate(ended = if_else(married == TRUE | !is.na(str_extract(current_partner_status, "^Yes")) | !is.na(str_extract(end, "deceased$")), FALSE, TRUE )) 
 
 df_filtered %>% 
-  select(married,has_married, current_partner_status, ended)
+  select(married,has_married, current_partner_status, ended, relationship_quality)
 ```
-
-
-```{r}
-tbl_vars(df_filtered)
-```
-```{r}
-df_filtered %>%
-  mutate(column = coalesce(ever_lived_together_w_partner, ever_lived_together_w_partner_2, currently_living_with_partner)) %>%
-  select(column, ever_lived_together_w_partner, ever_lived_together_w_partner_2, currently_living_with_partner)
-
-```
-
-
 
 ```{r}
 # Lets merge the columns for people who got divorced and those who didn't
 df_of_interest <- df_filtered %>% 
-  filter(married | ever_had_partner) %>% 
+  mutate(gender_sexually_attracted_to = coalesce(gender_sexually_attracted_to_1, gender_sexually_attracted_to_2, gender_sexually_attracted_to_1_2, gender_sexually_attracted_to_2_2)) %>% 
+  mutate(mutual_friends_prior_1 = coalesce(mutual_friends_prior_1, mutual_friends_prior_1_2)) %>%
+  mutate(mutual_friends_prior_2 = coalesce(mutual_friends_prior_2, mutual_friends_prior_2_2)) %>%
+  mutate(mutual_friends_prior_3 = coalesce(mutual_friends_prior_3, mutual_friends_prior_3_2)) %>%
+  mutate(mutual_friends_prior_4 = coalesce(mutual_friends_prior_4, mutual_friends_prior_4_2)) %>%
   
-  unite("gender_sexually_attracted_to", gender_sexually_attracted_to_1, gender_sexually_attracted_to_2, gender_sexually_attracted_to_1_2, gender_sexually_attracted_to_2_2, na.rm = TRUE, remove = F) %>%
+  mutate(partner_education_level = coalesce(partner_education_level, partner_education_level_2)) %>%
+  # mutate(times_married = coalesce(times_married_inclusive, times_married_2)) %>%
+  mutate(ever_lived_together_w_partner = coalesce(ever_lived_together_w_partner, ever_lived_together_w_partner_2, currently_living_with_partner)) %>% 
+  mutate(same_high_school = coalesce(same_high_school, same_high_school_2)) %>% 
+  mutate(same_university = coalesce(same_university, same_university_2)) %>% 
+  mutate(met_online = coalesce(met_online, met_online_2)) %>% 
+  mutate(sexual_orientation = coalesce(sexual_orientation, sexual_orientation_2)) %>% 
+  mutate(partner_polictial_belief = coalesce(partner_polictial_belief, partner_polictial_belief_2)) %>% 
+  mutate(sexual_orientation = coalesce(sexual_orientation, sexual_orientation_2)) %>% 
+  
+  mutate(grow_up_same_town = coalesce(grow_up_same_town, grow_up_same_town_2)) %>%
+  mutate(other_date = coalesce(other_date, other_date_2)) %>% 
 
-  unite("mutual_friends_prior_1", mutual_friends_prior_1, mutual_friends_prior_1_2, na.rm = TRUE, remove = F) %>%
-
-  unite("mutual_friends_prior_2", mutual_friends_prior_2, mutual_friends_prior_2_2, na.rm = TRUE, remove = F) %>%
-  unite("mutual_friends_prior_3", mutual_friends_prior_3, mutual_friends_prior_3_2, na.rm = TRUE, remove = F) %>%
-  unite("mutual_friends_prior_4", mutual_friends_prior_4, mutual_friends_prior_4_2, na.rm = TRUE, remove = F) %>%
-  unite("partner_education_level", partner_education_level, partner_education_level_2, na.rm = TRUE, remove = F) %>%
-  unite("times_married", times_married_inclusive, times_married_2, na.rm = TRUE, remove = F) %>%
-  unite("ever_lived_together_w_partner", ever_lived_together_w_partner, ever_lived_together_w_partner_2, currently_living_with_partner, na.rm = TRUE, remove = F) %>%
-  unite("same_high_school", same_high_school, same_high_school_2, na.rm = TRUE, remove = F) %>%
-  unite("same_university", same_university, same_university_2, na.rm = TRUE, remove = F) %>%
-  unite("met_online", met_online, met_online_2, na.rm = TRUE, remove = F) %>%
-  unite("sexual_orientation", sexual_orientation, sexual_orientation_2, na.rm = TRUE, remove = F) %>%
-  unite("partner_polictial_belief", partner_polictial_belief, partner_polictial_belief_2, na.rm = TRUE, remove = F) %>%
-  unite("grow_up_same_town", grow_up_same_town, grow_up_same_town_2, na.rm = TRUE, remove = F) %>%
-  unite("other_date", other_date, other_date_2, na.rm = TRUE, remove = F) %>%
-select(married,
+  select(married, has_married, ended,
        ever_had_partner,
        relationship_end_nonmar,
        marriage_end_mar,
@@ -334,10 +321,27 @@ select(married,
        mutual_friends_prior_3,
        mutual_friends_prior_4,
        relationship_quality,
-       partyid7,
-       
-       
-       )
+       partyid7
+  )
+  # 
+  # unite("gender_sexually_attracted_to", gender_sexually_attracted_to_1, gender_sexually_attracted_to_2, gender_sexually_attracted_to_1_2, gender_sexually_attracted_to_2_2, na.rm = TRUE, remove = F) %>%
+  # 
+  # unite("mutual_friends_prior_1", mutual_friends_prior_1, mutual_friends_prior_1_2, na.rm = TRUE, remove = F) %>%
+  # 
+  # unite("mutual_friends_prior_2", mutual_friends_prior_2, mutual_friends_prior_2_2, na.rm = TRUE, remove = F) %>%
+  # unite("mutual_friends_prior_3", mutual_friends_prior_3, mutual_friends_prior_3_2, na.rm = TRUE, remove = F) %>%
+  # unite("mutual_friends_prior_4", mutual_friends_prior_4, mutual_friends_prior_4_2, na.rm = TRUE, remove = F) %>%
+  # unite("partner_education_level", partner_education_level, partner_education_level_2, na.rm = TRUE, remove = F) %>%
+  # unite("times_married", times_married_inclusive, times_married_2, na.rm = TRUE, remove = F) %>%
+  # unite("ever_lived_together_w_partner", ever_lived_together_w_partner, ever_lived_together_w_partner_2, currently_living_with_partner, na.rm = TRUE, remove = F) %>%
+  # unite("same_high_school", same_high_school, same_high_school_2, na.rm = TRUE, remove = F) %>%
+  # unite("same_university", same_university, same_university_2, na.rm = TRUE, remove = F) %>%
+  # unite("met_online", met_online, met_online_2, na.rm = TRUE, remove = F) %>%
+  # unite("sexual_orientation", sexual_orientation, sexual_orientation_2, na.rm = TRUE, remove = F) %>%
+  # unite("partner_polictial_belief", partner_polictial_belief, partner_polictial_belief_2, na.rm = TRUE, remove = F) %>%
+  # unite("grow_up_same_town", grow_up_same_town, grow_up_same_town_2, na.rm = TRUE, remove = F) %>%
+  # unite("other_date", other_date, other_date_2, na.rm = TRUE, remove = F) %>%
+
 
 df_of_interest
 ```
