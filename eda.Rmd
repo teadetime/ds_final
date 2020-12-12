@@ -166,6 +166,15 @@ df_data <-
     mutate(across(everything(), as_factor))
 
 df_data
+
+
+#df_data <-
+#  df_column_rename %>%
+#    select(met_online) %>%
+#    mutate(across(everything(), ~as_factor(.x))) %>%
+#    summarize(numeric = as.numeric(met_online) - 1, met_online)
+
+#df_data
 ```
 
 ```{r}
@@ -344,6 +353,11 @@ numeric_political
 
 ```{r}
 tbl_vars(df_filtered)
+```
+```{r}
+df_filtered %>%
+  mutate(column = coalesce(ever_lived_together_w_partner, ever_lived_together_w_partner_2, currently_living_with_partner)) %>%
+  select(column, ever_lived_together_w_partner, ever_lived_together_w_partner_2, currently_living_with_partner)
 ```
 
 
@@ -667,6 +681,8 @@ data[ ,c("relationship_end_nonmar",
   round(5) %>%
   ggcorrplot(show.diag = T, type = "full", lab = TRUE, lab_size = 2) +
   ggtitle("Correlation Matrix for Broken Up Couples")
+
+df_data 
 ```
 
 
@@ -738,7 +754,7 @@ convert_met_online <- function(x) {
   )
 }
 
-#convert_met_online(df_of_interest$met_online)
+convert_met_online(df_of_interest$met_online)
 
 data <-
   df_of_interest %>%
@@ -759,6 +775,8 @@ data <-
            sexual_orientation = as.numeric(sexual_orientation),
            ever_lived_together_w_partner = as.numeric(ever_lived_together_w_partner),
            xlgb = as.numeric(xlgb))
+
+data$partner_polictial_belief
 
 data[ ,c("married", 
          "relationship_quality",
@@ -783,8 +801,11 @@ data[ ,c("married",
 #df_of_interest %>%
 #  mutate(across(everything(), as_factor))
 
-df_of_interest
+df_of_interest %>%
+  select(met_online) %>%
+  summarize(numeric = as.numeric(met_online) - 1, met_online)
 
+df_data
 ```
 
 ```{r def-logit}
@@ -816,7 +837,7 @@ model_married <-
   )
 
 
-data_test <- tibble(relationship_quality = 2, age_when_met = 40, met_online = 1)
+data_test <- tibble(relationship_quality = 2, age_when_met = 15, met_online = 1)
 df_basic <-
   data_test %>%
   add_predictions(model_married, var = "log_odds_ratio") %>%
