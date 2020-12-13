@@ -1,74 +1,55 @@
----
-title: "report"
-author: "Nathan Faber and Thomas Jagielski"
-date: 2020-11-27
-output:
-  github_document:
-    toc: true
----
+report
+================
+Nathan Faber and Thomas Jagielski
+2020-11-27
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-library(tidyverse)
-library(haven)
-library(dplyr)
-library(broom)
-library(ggcorrplot)
-library(corrplot)
-library(modelr)
-
-logit <- function(p) {
-  odds_ratio <- p / (1 - p)
-  log(odds_ratio)
-}
-
-inv.logit <- function(x) {
-  exp(x) / (1 + exp(x))
-}
-
-convert_ever_lived_with_partner <- function(x) {
-  case_when(
-    x == 3 ~ 0,
-    x == 2 ~ 2
-  )
-}
-convert_met_online <- function(x) {
-  case_when(
-    x == 2 ~ 0,
-    x == 3 ~ 1,
-    x == 4 ~ 1,
-    x == 5 ~ 1,
-    x == 6 ~ 1,
-    x == 7 ~ 1,
-    x == 8 ~ 1,
-    x == 9 ~ 1,
-    x == 10 ~ 1
-  )
-}
-convert_same_town <- function(x) {
-  case_when(
-    x == 3 ~ 0,
-    x == 2 ~ 1
-  )
-}
-```
+  - [How Couples Meet and If They Stay
+    Together](#how-couples-meet-and-if-they-stay-together)
+      - [Question](#question)
+      - [Dataset and Background](#dataset-and-background)
+      - [EDA](#eda)
+      - [Correlation Matrix for Predictive
+        Factors](#correlation-matrix-for-predictive-factors)
+      - [Modelling](#modelling)
+      - [Remaining Questions](#remaining-questions)
 
 ## How Couples Meet and If They Stay Together
 
 ### Question
-Are there predicting factors for if a couple are more likely to stay together or split up?  If so, can we model the likelihood of a couple staying together or splitting up based on inputs for the predicting factors?
+
+Are there predicting factors for if a couple are more likely to stay
+together or split up? If so, can we model the likelihood of a couple
+staying together or splitting up based on inputs for the predicting
+factors?
 
 ### Dataset and Background
-This project utilizes the HCMST (How Couples Meet and Stay Together) [https://data.stanford.edu/hcmst2017] This dataset was collected in 2017 and is made up of ~4,000 survey results from individuals 18+ that had been in a relationship previously. This survey is a remake of an earlier version of this survey with similar data. The data  contains a wide range of variables--all pertaining to the individual and their partner. Some examples of the data available include: Race, Religion, Level of Education, Sexual Orientation, How their relationship ended etc.
 
-The survey  does have several notable quirks. The survey separates out an LGB group that was specifically sampled for. The survey was orchestrated through a rewards platform (KnowledgeBase) in which participants were compensated. This could introduce some form of sample bias. There were specific measures taken to attempt to get a representative sample, for example, random dialing of telephone numbers, as well as using address based sampling.
+This project utilizes the HCMST (How Couples Meet and Stay Together)
+\[<https://data.stanford.edu/hcmst2017>\] This dataset was collected in
+2017 and is made up of \~4,000 survey results from individuals 18+ that
+had been in a relationship previously. This survey is a remake of an
+earlier version of this survey with similar data. The data contains a
+wide range of variables–all pertaining to the individual and their
+partner. Some examples of the data available include: Race, Religion,
+Level of Education, Sexual Orientation, How their relationship ended
+etc.
 
-Given the above, this data source suits our purposes and will aid us in understanding which factors cause couples to stay together.
+The survey does have several notable quirks. The survey separates out an
+LGB group that was specifically sampled for. The survey was orchestrated
+through a rewards platform (KnowledgeBase) in which participants were
+compensated. This could introduce some form of sample bias. There were
+specific measures taken to attempt to get a representative sample, for
+example, random dialing of telephone numbers, as well as using address
+based sampling.
+
+Given the above, this data source suits our purposes and will aid us in
+understanding which factors cause couples to stay together.
 
 ### EDA
 
 ### Correlation Matrix for Predictive Factors
-```{r load_data}
+
+``` r
 df_raw <- read_dta(file = "./data/HCMST.dta")
 
 df_column_rename <-
@@ -189,13 +170,20 @@ df_column_rename <-
       how_many_met_dating_app_2 = w6_how_many_app_2      
       )
 ```
-```{r convert_factor}
+
+    ## Warning: `as.tibble()` is deprecated as of tibble 2.0.0.
+    ## Please use `as_tibble()` instead.
+    ## The signature and semantics have changed, see `?as_tibble`.
+    ## This warning is displayed once every 8 hours.
+    ## Call `lifecycle::last_warnings()` to see where this warning was generated.
+
+``` r
 df_data <-
   df_column_rename %>%
     mutate(across(everything(), as_factor))
 ```
 
-```{r convert_type}
+``` r
 df_filtered <- df_data 
 df_filtered$married <- ifelse(is.na(df_filtered$married) | df_filtered$married == "Refused" ,
                               NA,
@@ -243,11 +231,9 @@ df_filtered$other_date <- ifelse(is.na(df_filtered$other_date) | df_filtered$oth
 df_filtered$other_date_2 <- ifelse(is.na(df_filtered$other_date_2) | df_filtered$other_date_2 == "Refused",
                                              NA,
                                              as.logical(!is.na(str_extract(df_filtered$other_date_2, "^Yes"))))
-
-
 ```
 
-```{r create_new_columns_ended}
+``` r
 df_filtered <- df_filtered %>%
   filter(married | ever_had_partner | !is.na(str_extract(current_partner_status, "^Yes"))   ) %>% 
   mutate(ever_married = coalesce(times_married_inclusive, times_married, times_married_2)) %>%
@@ -260,7 +246,22 @@ df_filtered %>%
   select(married,has_married, current_partner_status, ended, relationship_quality)
 ```
 
-```{r merge_columns}
+    ## # A tibble: 3,320 x 5
+    ##    married has_married current_partner_status            ended relationship_qua~
+    ##    <lgl>   <lgl>       <fct>                             <lgl> <fct>            
+    ##  1 FALSE   TRUE        No, I am single, with no boyfrie~ TRUE  <NA>             
+    ##  2 TRUE    TRUE        <NA>                              FALSE Excellent        
+    ##  3 TRUE    TRUE        <NA>                              FALSE Good             
+    ##  4 FALSE   FALSE       No, I am single, with no boyfrie~ TRUE  <NA>             
+    ##  5 TRUE    TRUE        <NA>                              FALSE Excellent        
+    ##  6 TRUE    TRUE        <NA>                              FALSE Good             
+    ##  7 TRUE    TRUE        <NA>                              FALSE Excellent        
+    ##  8 TRUE    TRUE        <NA>                              FALSE Excellent        
+    ##  9 FALSE   FALSE       No, I am single, with no boyfrie~ FALSE <NA>             
+    ## 10 TRUE    TRUE        <NA>                              FALSE Fair             
+    ## # ... with 3,310 more rows
+
+``` r
 # Lets merge the columns for people who got divorced and those who didn't
 df_of_interest <- df_filtered %>% 
   mutate(gender_sexually_attracted_to = coalesce(gender_sexually_attracted_to_1, gender_sexually_attracted_to_2, gender_sexually_attracted_to_1_2, gender_sexually_attracted_to_2_2)) %>% 
@@ -332,7 +333,31 @@ df_of_interest <- df_filtered %>%
 df_of_interest
 ```
 
-```{r correlation_all_factors}
+    ## # A tibble: 3,320 x 28
+    ##    married has_married ended ever_had_partner relationship_en~ marriage_end_mar
+    ##    <lgl>   <lgl>       <lgl> <lgl>            <fct>            <fct>           
+    ##  1 FALSE   TRUE        TRUE  TRUE             We broke up      <NA>            
+    ##  2 TRUE    TRUE        FALSE NA               <NA>             <NA>            
+    ##  3 TRUE    TRUE        FALSE NA               <NA>             <NA>            
+    ##  4 FALSE   FALSE       TRUE  TRUE             We broke up      <NA>            
+    ##  5 TRUE    TRUE        FALSE NA               <NA>             <NA>            
+    ##  6 TRUE    TRUE        FALSE NA               <NA>             <NA>            
+    ##  7 TRUE    TRUE        FALSE NA               <NA>             <NA>            
+    ##  8 TRUE    TRUE        FALSE NA               <NA>             <NA>            
+    ##  9 FALSE   FALSE       FALSE TRUE             [Partner Name] ~ <NA>            
+    ## 10 TRUE    TRUE        FALSE NA               <NA>             <NA>            
+    ## # ... with 3,310 more rows, and 22 more variables:
+    ## #   ever_lived_together_w_partner <fct>, age_when_met <fct>,
+    ## #   partnership_status <fct>, other_date <lgl>, grow_up_same_town <fct>,
+    ## #   partner_polictial_belief <fct>, sexual_orientation <fct>, met_online <fct>,
+    ## #   same_high_school <lgl>, same_university <lgl>, who_broke_up <fct>,
+    ## #   times_married <fct>, partner_education_level <fct>, xlgb <fct>,
+    ## #   w6_same_sex_couple <fct>, gender_sexually_attracted_to <fct>,
+    ## #   mutual_friends_prior_1 <fct>, mutual_friends_prior_2 <fct>,
+    ## #   mutual_friends_prior_3 <fct>, mutual_friends_prior_4 <fct>,
+    ## #   relationship_quality <fct>, partyid7 <fct>
+
+``` r
 data <-
   df_of_interest %>%
     mutate(across(everything(), as_factor)) %>%
@@ -414,7 +439,12 @@ data[ ,complete_list] %>%
   scale_y_discrete(labels=complete_label)
 ```
 
-```{r correlation_selected_factors}
+    ## Warning in cor(., use = "pairwise.complete.obs", method = c("pearson",
+    ## "kendall", : the standard deviation is zero
+
+![](report_files/figure-gfm/correlation_all_factors-1.png)<!-- -->
+
+``` r
 selected_list <- 
   c("married",
     "ended",
@@ -434,10 +464,14 @@ data[ ,selected_list] %>%
   scale_y_discrete(labels=complete_label)
 ```
 
+    ## Warning in cor(., use = "pairwise.complete.obs", method = c("pearson",
+    ## "kendall", : the standard deviation is zero
+
+![](report_files/figure-gfm/correlation_selected_factors-1.png)<!-- -->
 
 ### Modelling
 
-```{r create_model}
+``` r
 model_ended <-
   glm(
     formula = ended ~ met_online + ever_lived_together_w_partner + w6_same_sex_couple + age_when_met + political_diff + other_date,
@@ -451,13 +485,26 @@ model_ended %>%
     conf.int = TRUE,
     conf.level = 0.90
   ) #%>% mutate(
+```
+
+    ## # A tibble: 7 x 7
+    ##   term                  estimate std.error statistic  p.value conf.low conf.high
+    ##   <chr>                    <dbl>     <dbl>     <dbl>    <dbl>    <dbl>     <dbl>
+    ## 1 (Intercept)           -0.809     0.196      -4.13  3.62e- 5 -1.13      -0.487 
+    ## 2 met_online            -0.371     0.172      -2.16  3.09e- 2 -0.658     -0.0918
+    ## 3 ever_lived_together_~ -1.26      0.0641    -19.6   9.29e-86 -1.36      -1.15  
+    ## 4 w6_same_sex_couple     0.738     0.175       4.21  2.53e- 5  0.447      1.02  
+    ## 5 age_when_met           0.00466   0.00476     0.979 3.27e- 1 -0.00320    0.0125
+    ## 6 political_diff         0.202     0.0407      4.96  7.07e- 7  0.135      0.268 
+    ## 7 other_date             0.335     0.168       1.99  4.63e- 2  0.0564     0.610
+
+``` r
     #mse = mse_val,
     #rsquare = rsquare_val
   #)
 ```
 
-
-```{r apply_model}
+``` r
 data_test <- tibble(met_online = 0, 
                     ever_lived_together_w_partner = 1,  
                     w6_same_sex_couple = 0,  
@@ -474,5 +521,12 @@ df_prediction <-
 
 df_prediction
 ```
+
+    ## # A tibble: 1 x 9
+    ##   order met_online ever_lived_toge~ w6_same_sex_cou~ age_when_met political_diff
+    ##   <int>      <dbl>            <dbl>            <dbl>        <dbl>          <dbl>
+    ## 1     1          0                1                0           26              2
+    ## # ... with 3 more variables: other_date <dbl>, log_odds_ratio <dbl>,
+    ## #   pr_ended <dbl>
 
 ### Remaining Questions
