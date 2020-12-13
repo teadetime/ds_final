@@ -8,6 +8,7 @@ Nathan Faber and Thomas Jagielski
       - [Question](#question)
       - [Dataset and Background](#dataset-and-background)
       - [EDA](#eda)
+      - [Loading and Processing Data](#loading-and-processing-data)
       - [Correlation Matrix for Predictive
         Factors](#correlation-matrix-for-predictive-factors)
       - [Modelling](#modelling)
@@ -47,219 +48,7 @@ understanding which factors cause couples to stay together.
 
 ### EDA
 
-### Correlation Matrix for Predictive Factors
-
-``` r
-df_raw <- read_dta(file = "./data/HCMST.dta")
-
-df_column_rename <-
-  df_raw %>%
-    as.tibble() %>%
-    rename(
-      married = S1,
-      current_partner_status = S2,
-      ever_had_partner = S3,
-      partner_sex = Q4,
-      partner_same_sex = Q5,
-      partner_latino_hispanic = Q6A,
-      partner_race = Q6B,
-      partner_age = Q9,
-      partner_education_level = Q10,
-      partner_mother_education_level = Q11,
-      partner_polictial_belief = Q12,
-      your_mother_education_level = Q14,
-      #country_you_grew_up_in = Q15A1,
-      #state_you_grew_up_in = Q15A2,
-      #city_you_grew_up_in = Q15A3,
-      #your_country_met_partner = Q15A4,
-      #your_state_met_partner = Q15A5,
-      #your_city_met_partner = Q15A6,
-      met_partner_location = Q15A7,
-      number_relatives_you_visit = Q16,
-      times_married_inclusive = Q17A, # if S1=1
-      times_married = Q17B, # if S1=2
-      gender_sexually_attracted_to_1 = Q17C, # ppgender = 2
-      gender_sexually_attracted_to_2 = Q17D, #ppgender = 1
-      currently_living_with_partner = Q19,
-      ever_lived_together_w_partner = Q20,
-      date_met_year = Q21A_Year,
-      date_met_month = Q21A_Month,
-      date_relationship_began_year = Q21B_Year,
-      date_relationship_began_month = Q21B_Month,
-      date_first_lived_together_year = Q21C_Year,
-      date_first_lived_together_month = Q21C_Month,
-      date_married_year = Q21D_Year,
-      date_married_month = Q21D_Month,
-      sexual_orientation = w6_identity,
-      outness = w6_outness,
-      age_came_out = w6_outness_timing,
-      income_disparity = Q23,
-      #story_how_met = Q24,
-      same_high_school = Q25,
-      same_university = Q26,
-      grow_up_same_town = Q27,
-      parents_knew_each_other_before_met = Q28,
-      mutual_friends_prior_1 = w6_friend_connect_1,
-      mutual_friends_prior_2 = w6_friend_connect_2,
-      mutual_friends_prior_3 = w6_friend_connect_3,
-      mutual_friends_prior_4 = w6_friend_connect_4,
-      met_online = Q32,
-      relationship_quality = Q34,
-      #realtionship_explaination = Q35,
-      sex_frequency = w6_sex_frequency,
-      other_date = w6_otherdate,
-      number_others_dated = w6_how_many, # how many other people met with besides partner
-      #how_met = w6_how_meet,
-      dating_app_met_other = w6_otherdate_app,
-      how_many_met_dating_app = w6_how_many_app,
-      #most_commonly_used_dating_app = Q40,
-      ever_married_to_partner = Past_Partner_Q1,
-      relationship_end_nonmar = w6_relationship_end_nonmar,
-      who_wanted_breakup_more_nonmar = w6_breakup_nonmar,
-      marriage_end_mar = w6_relationship_end_mar,
-      who_broke_up = w6_who_breakup,
-      #reason_break_up = w6_why_broke_up,
-      partner_same_sex_2 = Q5_2,
-      partner_hispanic_latino_2 = Q6A_2,
-      year_partner_born_2 = Q9B_2,
-      partner_education_level_2 = Q10_2,
-      partner_mother_education_level_2 = Q11_2,
-      partner_polictial_belief_2 = Q12_2,
-      your_mother_education_level_2 = Q14_2,
-      #country_you_grew_up_in_2 = Q15A1_2,
-      #state_you_grew_up_in_2 = Q15A2_2,
-      #city_you_grew_up_in_2 = Q15A3_2,
-      #your_country_met_partner_2 = Q15A4_2,
-      #your_state_met_partner_2 = Q15A5_2,
-      #your_city_met_partner_2 = Q15A6_2,
-      met_partner_location_2 = Q15A7_2_1,
-      number_relatives_you_visit_2 = Q16_2,
-      times_married_2 = Q17B_2,
-      gender_sexually_attracted_to_1_2 = Q17C_2, # ppgender = 2
-      gender_sexually_attracted_to_2_2 = Q17D_2, #ppgender = 1
-      ever_lived_together_w_partner_2 = Q20_2,
-      date_met_year_2 = Q21A_2_Year,
-      date_met_month_2 = Q21A_2_Month,
-      date_relationship_began_year_2 = Q21B_2_Year,
-      date_relationship_began_month_2 = Q21B_2_Month,
-      date_first_lived_together_year_2 = Q21C_2_Year,
-      date_first_lived_together_month_2 = Q21C_2_Month,
-      date_married_year_2 = Q21D_2_Year,
-      date_married_month_2 = Q21D_2_Month,
-      date_broken_up_year_2 = Q21E_2_Year,
-      date_broken_up_month_2 = Q21E_2_Month,
-      date_partner_pass_year = Q21F_2_Year,
-      date_partner_pass_month = Q21F_2_Month,
-      sexual_orientation_2 = w6_identity_2,
-      outness_2 = w6_outness_2,
-      age_came_out_2 = w6_outness_timing_2,
-      income_disparity_2 = Q23_2,
-      #story_how_met_2 = Q24_2,
-      same_high_school_2 = Q25_2,
-      same_university_2 = Q26_2,
-      grow_up_same_town_2 = Q27_2,
-      parents_knew_each_other_before_met_2 = Q28_2,
-      mutual_friends_prior_1_2 = w6_friend_connect_2_1,
-      mutual_friends_prior_2_2 = w6_friend_connect_2_2,
-      mutual_friends_prior_3_2 = w6_friend_connect_2_3,
-      mutual_friends_prior_4_2 = w6_friend_connect_2_4,
-      met_online_2 = Q32_2,
-      other_date_2 = w6_otherdate_2,      
-      number_others_dated_2 = w6_how_many_2, # how many other people met with besides partner
-      dating_app_met_other_2 = w6_otherdate_app_2,
-      how_many_met_dating_app_2 = w6_how_many_app_2      
-      )
-```
-
-    ## Warning: `as.tibble()` is deprecated as of tibble 2.0.0.
-    ## Please use `as_tibble()` instead.
-    ## The signature and semantics have changed, see `?as_tibble`.
-    ## This warning is displayed once every 8 hours.
-    ## Call `lifecycle::last_warnings()` to see where this warning was generated.
-
-``` r
-df_data <-
-  df_column_rename %>%
-    mutate(across(everything(), as_factor))
-```
-
-``` r
-df_filtered <- df_data 
-df_filtered$married <- ifelse(is.na(df_filtered$married) | df_filtered$married == "Refused" ,
-                              NA,
-                              as.logical(!is.na(str_extract(df_filtered$married, "^Yes"))))
-
-
-df_filtered$ever_had_partner <- ifelse(is.na(df_filtered$ever_had_partner) | df_filtered$ever_had_partner == "Refused" ,
-                              NA,
-                              as.logical(!is.na(str_extract(df_filtered$ever_had_partner, "^Yes"))))
-
-df_filtered$partner_sex <- ifelse(is.na(df_filtered$partner_sex) | df_filtered$partner_sex == "Refused",
-                                              NA,
-                                              as.logical(!is.na(str_extract(df_filtered$partner_sex, "Male$"))))
-
-df_filtered$same_high_school <- ifelse(is.na(df_filtered$same_high_school) | df_filtered$same_high_school== "Refused",
-                                              NA,
-                                              as.logical(!is.na(str_extract(df_filtered$same_high_school, "^Same"))))
-
-
-df_filtered$same_university <- ifelse(is.na(df_filtered$same_university) | df_filtered$same_university== "Refused",
-                                              NA,
-                                              as.logical(!is.na(str_extract(df_filtered$same_university, "^Atten"))))
-
-df_filtered$same_high_school_2 <- ifelse(is.na(df_filtered$same_high_school_2) | df_filtered$same_high_school_2== "Refused",
-                                              NA,
-                                              as.logical(!is.na(str_extract(df_filtered$same_high_school_2, "^Same"))))
-
-
-df_filtered$same_university_2 <- ifelse(is.na(df_filtered$same_university_2) | df_filtered$same_university_2== "Refused",
-                                              NA,
-                                              as.logical(!is.na(str_extract(df_filtered$same_university_2, "^Atten"))))
-
-
-df_filtered$parents_knew_each_other_before_met<- ifelse(is.na(df_filtered$parents_knew_each_other_before_met) | df_filtered$parents_knew_each_other_before_met == "Refused",
-                                             NA,
-                                             as.logical(!is.na(str_extract(df_filtered$parents_knew_each_other_before_met, "^Yes"))))
-
-# df_filtered$grow_up_same_town <- ifelse(is.na(df_filtered$grow_up_same_town) | df_filtered$grow_up_same_town == "Refused",
-#                                              NA,
-#                                              as.logical(!is.na(str_extract(df_filtered$grow_up_same_town, "^Yes"))))
-
-df_filtered$other_date <- ifelse(is.na(df_filtered$other_date) | df_filtered$other_date == "Refused",
-                                             NA,
-                                             as.logical(!is.na(str_extract(df_filtered$other_date, "^Yes"))))
-df_filtered$other_date_2 <- ifelse(is.na(df_filtered$other_date_2) | df_filtered$other_date_2 == "Refused",
-                                             NA,
-                                             as.logical(!is.na(str_extract(df_filtered$other_date_2, "^Yes"))))
-```
-
-``` r
-df_filtered <- df_filtered %>%
-  filter(married | ever_had_partner | !is.na(str_extract(current_partner_status, "^Yes"))   ) %>% 
-  mutate(ever_married = coalesce(times_married_inclusive, times_married, times_married_2)) %>%
-  mutate(has_married = if_else(ever_married== "Never married" , FALSE, TRUE))  %>%
-  # Now look if marriage ended
-  mutate(end = coalesce(relationship_end_nonmar,marriage_end_mar)) %>%
-  mutate(ended = if_else(married == TRUE | !is.na(str_extract(current_partner_status, "^Yes")) | !is.na(str_extract(end, "deceased$")), FALSE, TRUE )) 
-
-df_filtered %>% 
-  select(married,has_married, current_partner_status, ended, relationship_quality)
-```
-
-    ## # A tibble: 3,320 x 5
-    ##    married has_married current_partner_status            ended relationship_qua~
-    ##    <lgl>   <lgl>       <fct>                             <lgl> <fct>            
-    ##  1 FALSE   TRUE        No, I am single, with no boyfrie~ TRUE  <NA>             
-    ##  2 TRUE    TRUE        <NA>                              FALSE Excellent        
-    ##  3 TRUE    TRUE        <NA>                              FALSE Good             
-    ##  4 FALSE   FALSE       No, I am single, with no boyfrie~ TRUE  <NA>             
-    ##  5 TRUE    TRUE        <NA>                              FALSE Excellent        
-    ##  6 TRUE    TRUE        <NA>                              FALSE Good             
-    ##  7 TRUE    TRUE        <NA>                              FALSE Excellent        
-    ##  8 TRUE    TRUE        <NA>                              FALSE Excellent        
-    ##  9 FALSE   FALSE       No, I am single, with no boyfrie~ FALSE <NA>             
-    ## 10 TRUE    TRUE        <NA>                              FALSE Fair             
-    ## # ... with 3,310 more rows
+### Loading and Processing Data
 
 ``` r
 # Lets merge the columns for people who got divorced and those who didn't
@@ -308,32 +97,14 @@ df_of_interest <- df_filtered %>%
        mutual_friends_prior_3,
        mutual_friends_prior_4,
        relationship_quality,
-       partyid7
+       partyid7,
+       CaseID
   )
-  # 
-  # unite("gender_sexually_attracted_to", gender_sexually_attracted_to_1, gender_sexually_attracted_to_2, gender_sexually_attracted_to_1_2, gender_sexually_attracted_to_2_2, na.rm = TRUE, remove = F) %>%
-  # 
-  # unite("mutual_friends_prior_1", mutual_friends_prior_1, mutual_friends_prior_1_2, na.rm = TRUE, remove = F) %>%
-  # 
-  # unite("mutual_friends_prior_2", mutual_friends_prior_2, mutual_friends_prior_2_2, na.rm = TRUE, remove = F) %>%
-  # unite("mutual_friends_prior_3", mutual_friends_prior_3, mutual_friends_prior_3_2, na.rm = TRUE, remove = F) %>%
-  # unite("mutual_friends_prior_4", mutual_friends_prior_4, mutual_friends_prior_4_2, na.rm = TRUE, remove = F) %>%
-  # unite("partner_education_level", partner_education_level, partner_education_level_2, na.rm = TRUE, remove = F) %>%
-  # unite("times_married", times_married_inclusive, times_married_2, na.rm = TRUE, remove = F) %>%
-  # unite("ever_lived_together_w_partner", ever_lived_together_w_partner, ever_lived_together_w_partner_2, currently_living_with_partner, na.rm = TRUE, remove = F) %>%
-  # unite("same_high_school", same_high_school, same_high_school_2, na.rm = TRUE, remove = F) %>%
-  # unite("same_university", same_university, same_university_2, na.rm = TRUE, remove = F) %>%
-  # unite("met_online", met_online, met_online_2, na.rm = TRUE, remove = F) %>%
-  # unite("sexual_orientation", sexual_orientation, sexual_orientation_2, na.rm = TRUE, remove = F) %>%
-  # unite("partner_polictial_belief", partner_polictial_belief, partner_polictial_belief_2, na.rm = TRUE, remove = F) %>%
-  # unite("grow_up_same_town", grow_up_same_town, grow_up_same_town_2, na.rm = TRUE, remove = F) %>%
-  # unite("other_date", other_date, other_date_2, na.rm = TRUE, remove = F) %>%
-
 
 df_of_interest
 ```
 
-    ## # A tibble: 3,320 x 28
+    ## # A tibble: 3,320 x 29
     ##    married has_married ended ever_had_partner relationship_en~ marriage_end_mar
     ##    <lgl>   <lgl>       <lgl> <lgl>            <fct>            <fct>           
     ##  1 FALSE   TRUE        TRUE  TRUE             We broke up      <NA>            
@@ -346,7 +117,7 @@ df_of_interest
     ##  8 TRUE    TRUE        FALSE NA               <NA>             <NA>            
     ##  9 FALSE   FALSE       FALSE TRUE             [Partner Name] ~ <NA>            
     ## 10 TRUE    TRUE        FALSE NA               <NA>             <NA>            
-    ## # ... with 3,310 more rows, and 22 more variables:
+    ## # ... with 3,310 more rows, and 23 more variables:
     ## #   ever_lived_together_w_partner <fct>, age_when_met <fct>,
     ## #   partnership_status <fct>, other_date <lgl>, grow_up_same_town <fct>,
     ## #   partner_polictial_belief <fct>, sexual_orientation <fct>, met_online <fct>,
@@ -355,7 +126,18 @@ df_of_interest
     ## #   w6_same_sex_couple <fct>, gender_sexually_attracted_to <fct>,
     ## #   mutual_friends_prior_1 <fct>, mutual_friends_prior_2 <fct>,
     ## #   mutual_friends_prior_3 <fct>, mutual_friends_prior_4 <fct>,
-    ## #   relationship_quality <fct>, partyid7 <fct>
+    ## #   relationship_quality <fct>, partyid7 <fct>, CaseID <fct>
+
+### Correlation Matrix for Predictive Factors
+
+In order to find if there were predictive factors for if someone was
+still in a relationship, we considered a correlation matrix for a
+variety of the factors. By doing this, we could determine relationships
+between variables. We considered the factors that had larger
+correlations with one being married, divorced, or separated.
+Furthermore, by considering the correlation matrix we were able to
+simplify the model by considering one factor that was highly correlated
+with another.
 
 ``` r
 data <-
@@ -444,6 +226,19 @@ data[ ,complete_list] %>%
 
 ![](report_files/figure-gfm/correlation_all_factors-1.png)<!-- -->
 
+**Observations**: This correlation matrix is overpopulated with data,
+but allows us to observe general trends in correlation throughout the
+entire filtered dataset. We can see that many factors have very little
+correlation between many of the factors. Oftentimes the strong
+correlations are ones that express the same information or have a
+logical link. For example, current partnership status has a strong
+negative correlation with married. Since higher numbers of partnership
+status are divorced or separated and a higher number for marriage
+represents the individual being married, this correlation makes sense.
+
+In order to look at specific factors in more detail we will consider a
+reduced set below.
+
 ``` r
 selected_list <- 
   c("married",
@@ -453,7 +248,8 @@ selected_list <-
     "ever_lived_together_w_partner",
     "w6_same_sex_couple",
     "age_when_met",
-    "political_diff")
+    "political_diff",
+    "other_date")
 
 data[ ,selected_list] %>%
   cor(use="pairwise.complete.obs", method = c("pearson", "kendall", "spearman")) %>%
@@ -469,13 +265,55 @@ data[ ,selected_list] %>%
 
 ![](report_files/figure-gfm/correlation_selected_factors-1.png)<!-- -->
 
+**Observations**: From this correlation matrix we can see that having
+ever lived with a partner appears to have one of the strongest
+correlations with staying in a marriage. We can also observe that same
+sex couples are less likely to married. However, this could be
+influenced by political restrictions about same sex marriage in
+different regions of the United States. Interestingly a large political
+difference has a positive correlation with the ending of a relationship
+or marriage; however, if we consider just the ending of a marriage it
+appears that there is a negative correlation between political
+difference and a marriage ended. Similarly, there appears to be a
+negative correlation between political orientation and being married. We
+can also observe that there is a positive correlation between someone
+having met their partner online and the age when they met. Similarly,
+there appears to be a positive correlation between meeting someone
+online and being a same sex couple.
+
 ### Modelling
+
+Using some of the factors that we found to have a strong correlation in
+the previous section, we were interested to see if we could create a
+model that would predict if someone would stay married or if their
+relationship would end.
+
+``` r
+n_train <- data %>%
+  summarize(N = as.integer(n()/2)) %>%
+  .$N
+
+df_train <-
+  data %>%
+  slice_sample(n = n_train)
+  
+
+df_validate <-
+  anti_join(
+   data,
+   df_train,
+   by = "CaseID"
+  )
+```
+
+Using the training set, we can create a model that predicts the ending
+of a relationship.
 
 ``` r
 model_ended <-
   glm(
-    formula = ended ~ met_online + ever_lived_together_w_partner + w6_same_sex_couple + age_when_met + political_diff + other_date,
-    data = data,
+    formula = ended ~ met_online + ever_lived_together_w_partner + w6_same_sex_couple + age_when_met + political_diff,
+    data = df_train,
     family = "binomial"
   ) 
 
@@ -484,25 +322,67 @@ model_ended %>%
   tidy(
     conf.int = TRUE,
     conf.level = 0.90
-  ) #%>% mutate(
+  )
 ```
 
-    ## # A tibble: 7 x 7
+    ## # A tibble: 6 x 7
     ##   term                  estimate std.error statistic  p.value conf.low conf.high
     ##   <chr>                    <dbl>     <dbl>     <dbl>    <dbl>    <dbl>     <dbl>
-    ## 1 (Intercept)           -0.809     0.196      -4.13  3.62e- 5 -1.13      -0.487 
-    ## 2 met_online            -0.371     0.172      -2.16  3.09e- 2 -0.658     -0.0918
-    ## 3 ever_lived_together_~ -1.26      0.0641    -19.6   9.29e-86 -1.36      -1.15  
-    ## 4 w6_same_sex_couple     0.738     0.175       4.21  2.53e- 5  0.447      1.02  
-    ## 5 age_when_met           0.00466   0.00476     0.979 3.27e- 1 -0.00320    0.0125
-    ## 6 political_diff         0.202     0.0407      4.96  7.07e- 7  0.135      0.268 
-    ## 7 other_date             0.335     0.168       1.99  4.63e- 2  0.0564     0.610
+    ## 1 (Intercept)           -0.666     0.274       -2.43 1.49e- 2 -1.12      -0.215 
+    ## 2 met_online            -0.620     0.245       -2.54 1.12e- 2 -1.03      -0.225 
+    ## 3 ever_lived_together_~ -1.37      0.0904     -15.1  1.33e-51 -1.52      -1.22  
+    ## 4 w6_same_sex_couple     0.798     0.246        3.24 1.19e- 3  0.389      1.20  
+    ## 5 age_when_met           0.00899   0.00658      1.37 1.72e- 1 -0.00188    0.0198
+    ## 6 political_diff         0.221     0.0584       3.79 1.53e- 4  0.124      0.317
+
+**Observations**: When considering the coefficients for our model we can
+see that there appears to be a negative correlation for meeting someone
+online and the relationship ending. Similarly, there appears to be a
+negative correlation between ever having lived with partner and the
+relationship ending. When considering the confidence intervals for these
+coefficients, it appears that the ranges do not include zero, which
+indicates significance in the model. We can also observe that the
+confidence interval for ever having lived with your partner is smaller
+than for having met online. The other factors we considered (same sex
+couple, age\_when\_met, and political difference) all appear to have
+positive correlation with the ending of a relationship. None of the
+confidence intervals for these coefficients include 0, which indicates
+the significance for all of these factors within our model. The age when
+a couple met appears to have the smallest confidence interval out of any
+of the factors considered within this model.
+
+We will next validate our model on the validation dataset.
 
 ``` r
-    #mse = mse_val,
-    #rsquare = rsquare_val
-  #)
+df_validate_summary <-
+  df_validate %>%
+  add_predictions(model_ended, var = "log_odds_ratio") %>%
+  arrange(log_odds_ratio) %>%
+  rowid_to_column(var = "order") %>%
+  mutate(pr_ended = inv.logit(log_odds_ratio)) %>%
+  mutate(ended_prediction = ifelse(pr_ended >= 0.5, 1, 0)) %>%
+  mutate(N = as.integer(n())) %>%
+  filter(ended_prediction == ended) %>%
+  mutate(N_correct = as.integer(n())) %>%
+  summarize(percent_correct = N_correct / N) %>%
+  summarize(mean(percent_correct))
+  
+df_validate_summary
 ```
+
+    ## # A tibble: 1 x 1
+    ##   `mean(percent_correct)`
+    ##                     <dbl>
+    ## 1                   0.849
+
+**Observations**: We find that using a log-odds threshold of 0.5% as the
+cutoff for an ending prediction (less than 0.5 indicates staying
+together; whereas, greater than 0.5 indicates splitting up), out model
+yielded the correct prediction for a separation approximately 85% of the
+time.
+
+Finally, we can input a test case into the model to predict the outcome
+of their relationship.
 
 ``` r
 data_test <- tibble(met_online = 0, 
@@ -517,16 +397,21 @@ df_prediction <-
   add_predictions(model_ended, var = "log_odds_ratio") %>%
   arrange(log_odds_ratio) %>%
   rowid_to_column(var = "order") %>%
-  mutate(pr_ended = inv.logit(log_odds_ratio))
+  mutate(pr_ended = inv.logit(log_odds_ratio)) %>%
+  mutate(ended_prediction = ifelse(pr_ended >= 0.5, 1, 0)) # 0 = False; 1 = True
 
-df_prediction
+print.data.frame(df_prediction) # use to print the entire dataframe in knitted document 
 ```
 
-    ## # A tibble: 1 x 9
-    ##   order met_online ever_lived_toge~ w6_same_sex_cou~ age_when_met political_diff
-    ##   <int>      <dbl>            <dbl>            <dbl>        <dbl>          <dbl>
-    ## 1     1          0                1                0           26              2
-    ## # ... with 3 more variables: other_date <dbl>, log_odds_ratio <dbl>,
-    ## #   pr_ended <dbl>
+    ##   order met_online ever_lived_together_w_partner w6_same_sex_couple
+    ## 1     1          0                             1                  0
+    ##   age_when_met political_diff other_date log_odds_ratio  pr_ended
+    ## 1           26              2          0      -1.355986 0.2048935
+    ##   ended_prediction
+    ## 1                0
+
+``` r
+#df_prediction
+```
 
 ### Remaining Questions

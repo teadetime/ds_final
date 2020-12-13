@@ -67,8 +67,8 @@ Given the above, this data source suits our purposes and will aid us in understa
 
 ### EDA
 
-### Correlation Matrix for Predictive Factors
-```{r load_data}
+### Loading and Processing Data
+```{r load_data, include=FALSE}
 df_raw <- read_dta(file = "./data/HCMST.dta")
 
 df_column_rename <-
@@ -189,13 +189,13 @@ df_column_rename <-
       how_many_met_dating_app_2 = w6_how_many_app_2      
       )
 ```
-```{r convert_factor}
+```{r convert_factor, include=FALSE}
 df_data <-
   df_column_rename %>%
     mutate(across(everything(), as_factor))
 ```
 
-```{r convert_type}
+```{r convert_type, include=FALSE}
 df_filtered <- df_data 
 df_filtered$married <- ifelse(is.na(df_filtered$married) | df_filtered$married == "Refused" ,
                               NA,
@@ -247,7 +247,7 @@ df_filtered$other_date_2 <- ifelse(is.na(df_filtered$other_date_2) | df_filtered
 
 ```
 
-```{r create_new_columns_ended}
+```{r create_new_columns_ended, include=FALSE}
 df_filtered <- df_filtered %>%
   filter(married | ever_had_partner | !is.na(str_extract(current_partner_status, "^Yes"))   ) %>% 
   mutate(ever_married = coalesce(times_married_inclusive, times_married, times_married_2)) %>%
@@ -307,30 +307,16 @@ df_of_interest <- df_filtered %>%
        mutual_friends_prior_3,
        mutual_friends_prior_4,
        relationship_quality,
-       partyid7
+       partyid7,
+       CaseID
   )
-  # 
-  # unite("gender_sexually_attracted_to", gender_sexually_attracted_to_1, gender_sexually_attracted_to_2, gender_sexually_attracted_to_1_2, gender_sexually_attracted_to_2_2, na.rm = TRUE, remove = F) %>%
-  # 
-  # unite("mutual_friends_prior_1", mutual_friends_prior_1, mutual_friends_prior_1_2, na.rm = TRUE, remove = F) %>%
-  # 
-  # unite("mutual_friends_prior_2", mutual_friends_prior_2, mutual_friends_prior_2_2, na.rm = TRUE, remove = F) %>%
-  # unite("mutual_friends_prior_3", mutual_friends_prior_3, mutual_friends_prior_3_2, na.rm = TRUE, remove = F) %>%
-  # unite("mutual_friends_prior_4", mutual_friends_prior_4, mutual_friends_prior_4_2, na.rm = TRUE, remove = F) %>%
-  # unite("partner_education_level", partner_education_level, partner_education_level_2, na.rm = TRUE, remove = F) %>%
-  # unite("times_married", times_married_inclusive, times_married_2, na.rm = TRUE, remove = F) %>%
-  # unite("ever_lived_together_w_partner", ever_lived_together_w_partner, ever_lived_together_w_partner_2, currently_living_with_partner, na.rm = TRUE, remove = F) %>%
-  # unite("same_high_school", same_high_school, same_high_school_2, na.rm = TRUE, remove = F) %>%
-  # unite("same_university", same_university, same_university_2, na.rm = TRUE, remove = F) %>%
-  # unite("met_online", met_online, met_online_2, na.rm = TRUE, remove = F) %>%
-  # unite("sexual_orientation", sexual_orientation, sexual_orientation_2, na.rm = TRUE, remove = F) %>%
-  # unite("partner_polictial_belief", partner_polictial_belief, partner_polictial_belief_2, na.rm = TRUE, remove = F) %>%
-  # unite("grow_up_same_town", grow_up_same_town, grow_up_same_town_2, na.rm = TRUE, remove = F) %>%
-  # unite("other_date", other_date, other_date_2, na.rm = TRUE, remove = F) %>%
-
 
 df_of_interest
 ```
+
+### Correlation Matrix for Predictive Factors
+
+In order to find if there were predictive factors for if someone was still in a relationship, we considered a correlation matrix for a variety of the factors.  By doing this, we could determine relationships between variables.  We considered the factors that had larger correlations with one being married, divorced, or separated.  Furthermore, by considering the correlation matrix we were able to simplify the model by considering one factor that was highly correlated with another.
 
 ```{r correlation_all_factors}
 data <-
@@ -414,6 +400,12 @@ data[ ,complete_list] %>%
   scale_y_discrete(labels=complete_label)
 ```
 
+**Observations**:
+This correlation matrix is overpopulated with data, but allows us to observe general trends in correlation throughout the entire filtered dataset.  We can see that many factors have very little correlation between many of the factors.  Oftentimes the strong correlations are ones that express the same information or have a logical link.  For example, current partnership status has a strong negative correlation with married.  Since higher numbers of partnership status are divorced or separated and a higher number for marriage represents the individual being married, this correlation makes sense.  
+
+
+In order to look at specific factors in more detail we will consider a reduced set below.
+
 ```{r correlation_selected_factors}
 selected_list <- 
   c("married",
@@ -423,7 +415,8 @@ selected_list <-
     "ever_lived_together_w_partner",
     "w6_same_sex_couple",
     "age_when_met",
-    "political_diff")
+    "political_diff",
+    "other_date")
 
 data[ ,selected_list] %>%
   cor(use="pairwise.complete.obs", method = c("pearson", "kendall", "spearman")) %>%
@@ -434,14 +427,40 @@ data[ ,selected_list] %>%
   scale_y_discrete(labels=complete_label)
 ```
 
+**Observations**:
+From this correlation matrix we can see that having ever lived with a partner appears to have one of the strongest correlations with staying in a marriage.  We can also observe that same sex couples are less likely to married.  However, this could be influenced by political restrictions about same sex marriage in different regions of the United States.  Interestingly a large political difference has a positive correlation with the ending of a relationship or marriage; however, if we consider just the ending of a marriage it appears that there is a negative correlation between political difference and a marriage ended.  Similarly, there appears to be a negative correlation between political orientation and being married.  We can also observe that there is a positive correlation between someone having met their partner online and the age when they met.  Similarly, there appears to be a positive correlation between meeting someone online and being a same sex couple.
+
 
 ### Modelling
+
+Using some of the factors that we found to have a strong correlation in the previous section, we were interested to see if we could create a model that would predict if someone would stay married or if their relationship would end.
+
+```{r split_data}
+n_train <- data %>%
+  summarize(N = as.integer(n()/2)) %>%
+  .$N
+
+df_train <-
+  data %>%
+  slice_sample(n = n_train)
+  
+
+df_validate <-
+  anti_join(
+   data,
+   df_train,
+   by = "CaseID"
+  )
+```
+
+
+Using the training set, we can create a model that predicts the ending of a relationship.
 
 ```{r create_model}
 model_ended <-
   glm(
-    formula = ended ~ met_online + ever_lived_together_w_partner + w6_same_sex_couple + age_when_met + political_diff + other_date,
-    data = data,
+    formula = ended ~ met_online + ever_lived_together_w_partner + w6_same_sex_couple + age_when_met + political_diff,
+    data = df_train,
     family = "binomial"
   ) 
 
@@ -450,12 +469,36 @@ model_ended %>%
   tidy(
     conf.int = TRUE,
     conf.level = 0.90
-  ) #%>% mutate(
-    #mse = mse_val,
-    #rsquare = rsquare_val
-  #)
+  )
 ```
 
+**Observations**:
+When considering the coefficients for our model we can see that there appears to be a negative correlation for meeting someone online and the relationship ending.  Similarly, there appears to be a negative correlation between ever having lived with partner and the relationship ending.  When considering the confidence intervals for these coefficients, it appears that the ranges do not include zero, which indicates significance in the model.  We can also observe that the confidence interval for ever having lived with your partner is smaller than for having met online.  The other factors we considered (same sex couple, age_when_met, and political difference) all appear to have positive correlation with the ending of a relationship.  None of the confidence intervals for these coefficients include 0, which indicates the significance for all of these factors within our model.  The age when a couple met appears to have the smallest confidence interval out of any of the factors considered within this model.
+
+
+We will next validate our model on the validation dataset.
+
+```{r validate_model}
+df_validate_summary <-
+  df_validate %>%
+  add_predictions(model_ended, var = "log_odds_ratio") %>%
+  arrange(log_odds_ratio) %>%
+  rowid_to_column(var = "order") %>%
+  mutate(pr_ended = inv.logit(log_odds_ratio)) %>%
+  mutate(ended_prediction = ifelse(pr_ended >= 0.5, 1, 0)) %>%
+  mutate(N = as.integer(n())) %>%
+  filter(ended_prediction == ended) %>%
+  mutate(N_correct = as.integer(n())) %>%
+  summarize(percent_correct = N_correct / N) %>%
+  summarize(mean(percent_correct))
+  
+df_validate_summary
+```
+**Observations**:
+We find that using a log-odds threshold of 0.5% as the cutoff for an ending prediction (less than 0.5 indicates staying together; whereas, greater than 0.5 indicates splitting up), out model yielded the correct prediction for a separation approximately 85% of the time.  
+
+
+Finally, we can input a test case into the model to predict the outcome of their relationship.
 
 ```{r apply_model}
 data_test <- tibble(met_online = 0, 
@@ -470,9 +513,31 @@ df_prediction <-
   add_predictions(model_ended, var = "log_odds_ratio") %>%
   arrange(log_odds_ratio) %>%
   rowid_to_column(var = "order") %>%
-  mutate(pr_ended = inv.logit(log_odds_ratio))
+  mutate(pr_ended = inv.logit(log_odds_ratio)) %>%
+  mutate(ended_prediction = ifelse(pr_ended >= 0.5, 1, 0)) # 0 = False; 1 = True
 
-df_prediction
+print.data.frame(df_prediction) # use to print the entire dataframe in knitted document 
+#df_prediction
 ```
 
 ### Remaining Questions
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
