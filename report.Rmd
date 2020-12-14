@@ -447,6 +447,7 @@ From this correlation matrix we can see that having ever lived with a partner ap
 Using some of the factors that we found to have a strong correlation in the previous section, we were interested to see if we could create a model that would predict if someone would stay married or if their relationship would end.
 
 ```{r split_data}
+set.seed(101)
 n_train <- data %>%
   summarize(N = as.integer(n()/2)) %>%
   .$N
@@ -484,7 +485,7 @@ model_ended %>%
 ```
 
 **Observations**:
-When considering the coefficients for our model we can see that there appears to be a negative correlation for meeting someone online and the relationship ending.  Similarly, there appears to be a negative correlation between ever having lived with partner and the relationship ending.  When considering the confidence intervals for these coefficients, it appears that the ranges do not include zero, which indicates significance in the model.  We can also observe that the confidence interval for ever having lived with your partner is smaller than for having met online.  The other factors we considered (same sex couple, age_when_met, and political difference) all appear to have positive correlation with the ending of a relationship.  None of the confidence intervals for these coefficients include 0, which indicates the significance for all of these factors within our model.  The age when a couple met appears to have the smallest confidence interval out of any of the factors considered within this model.
+When considering the coefficients for our model we can see that there appears to be a negative correlation for meeting someone online and the relationship ending.  Similarly, there appears to be a negative correlation between ever having lived with partner and the relationship ending.  When considering the confidence intervals for ever_lived_w_partner coefficient, it appears that the interval does not include zero, which indicates significance in the model.  Conversely, we find that the confidence interval for met_online does include zero.  Thus, this would indicate that this factor is not significant in the model.  We can also observe that the confidence interval for ever having lived with your partner is smaller than for having met online.  The other factors we considered (same sex couple, age_when_met, and political difference) all appear to have positive correlation with the ending of a relationship.  We find that the confidence interval of age_when_met includes zero.  This would indicate that this factor is not significant in the model.  However, the other factors have a confidence interval does not include zero.  This indicates the significance for same sex couple and the political difference in our model.  The age when a couple met appears to have the smallest confidence interval out of any of the factors considered within this model.
 
 
 We will next validate our model on the validation dataset.

@@ -318,6 +318,7 @@ model that would predict if someone would stay married or if their
 relationship would end.
 
 ``` r
+set.seed(101)
 n_train <- data %>%
   summarize(N = as.integer(n()/2)) %>%
   .$N
@@ -357,28 +358,33 @@ model_ended %>%
     ## # A tibble: 6 x 7
     ##   term                  estimate std.error statistic  p.value conf.low conf.high
     ##   <chr>                    <dbl>     <dbl>     <dbl>    <dbl>    <dbl>     <dbl>
-    ## 1 (Intercept)           -0.965     0.268       -3.60 3.24e- 4 -1.41      -0.525 
-    ## 2 met_online            -0.248     0.234       -1.06 2.91e- 1 -0.640      0.132 
-    ## 3 ever_lived_together_~ -1.25      0.0876     -14.3  2.35e-46 -1.40      -1.11  
-    ## 4 w6_same_sex_couple     0.612     0.249        2.46 1.38e- 2  0.198      1.02  
-    ## 5 age_when_met           0.00885   0.00669      1.32 1.86e- 1 -0.00220    0.0198
-    ## 6 political_diff         0.213     0.0577       3.69 2.25e- 4  0.118      0.308
+    ## 1 (Intercept)           -1.06      0.275      -3.86  1.11e- 4 -1.52      -0.612 
+    ## 2 met_online            -0.207     0.239      -0.867 3.86e- 1 -0.606      0.179 
+    ## 3 ever_lived_together_~ -1.21      0.0875    -13.8   2.25e-43 -1.35      -1.07  
+    ## 4 w6_same_sex_couple     0.953     0.237       4.03  5.58e- 5  0.560      1.34  
+    ## 5 age_when_met           0.00746   0.00687     1.09  2.77e- 1 -0.00391    0.0187
+    ## 6 political_diff         0.274     0.0558      4.90  9.35e- 7  0.182      0.366
 
 **Observations**: When considering the coefficients for our model we can
 see that there appears to be a negative correlation for meeting someone
 online and the relationship ending. Similarly, there appears to be a
 negative correlation between ever having lived with partner and the
-relationship ending. When considering the confidence intervals for these
-coefficients, it appears that the ranges do not include zero, which
-indicates significance in the model. We can also observe that the
-confidence interval for ever having lived with your partner is smaller
-than for having met online. The other factors we considered (same sex
-couple, age\_when\_met, and political difference) all appear to have
-positive correlation with the ending of a relationship. None of the
-confidence intervals for these coefficients include 0, which indicates
-the significance for all of these factors within our model. The age when
-a couple met appears to have the smallest confidence interval out of any
-of the factors considered within this model.
+relationship ending. When considering the confidence intervals for
+ever\_lived\_w\_partner coefficient, it appears that the interval does
+not include zero, which indicates significance in the model. Conversely,
+we find that the confidence interval for met\_online does include zero.
+Thus, this would indicate that this factor is not significant in the
+model. We can also observe that the confidence interval for ever having
+lived with your partner is smaller than for having met online. The other
+factors we considered (same sex couple, age\_when\_met, and political
+difference) all appear to have positive correlation with the ending of a
+relationship. We find that the confidence interval of age\_when\_met
+includes zero. This would indicate that this factor is not significant
+in the model. However, the other factors have a confidence interval does
+not include zero. This indicates the significance for same sex couple
+and the political difference in our model. The age when a couple met
+appears to have the smallest confidence interval out of any of the
+factors considered within this model.
 
 We will next validate our model on the validation dataset.
 
@@ -402,7 +408,7 @@ df_validate_summary
     ## # A tibble: 1 x 1
     ##   `mean(percent_correct)`
     ##                     <dbl>
-    ## 1                   0.852
+    ## 1                   0.856
 
 **Observations**: We find that using a log-odds threshold of 0.5% as the
 cutoff for an ending prediction (less than 0.5 indicates staying
@@ -434,8 +440,8 @@ print.data.frame(df_prediction) # use to print the entire dataframe in knitted d
 
     ##   order met_online ever_lived_together_w_partner w6_same_sex_couple
     ## 1     1          0                             1                  0
-    ##   age_when_met political_diff other_date log_odds_ratio pr_ended
-    ## 1           26              2          0      -1.561343 0.173454
+    ##   age_when_met political_diff other_date log_odds_ratio  pr_ended
+    ## 1           26              2          0      -1.530324 0.1779463
     ##   ended_prediction
     ## 1                0
 
