@@ -11,8 +11,10 @@ Nathan Faber and Thomas Jagielski
       - [Loading and Processing Data](#loading-and-processing-data)
       - [Correlation Matrix for Predictive
         Factors](#correlation-matrix-for-predictive-factors)
-      - [Modelling](#modelling)
-      - [Remaining Questions](#remaining-questions)
+      - [Modeling](#modeling)
+      - [Results](#results)
+      - [Remaining Questions / Where to
+        next?](#remaining-questions-where-to-next)
 
 ## How Couples Meet and If They Stay Together
 
@@ -47,6 +49,33 @@ Given the above, this data source suits our purposes and will aid us in
 understanding which factors cause couples to stay together.
 
 ### EDA
+
+As you have probably realized from above, this dataset is really quite
+large (3,500 rows by 285 columns)\! One of the first things that we
+noticed was the enormous number of NA values in each column. Upon
+further investigation these NA’s are intentional and indicate that the
+subject was not asked that question. Luckily we have access to the
+survey data (see the data folder of our repo) where we can see what each
+of the questions were and what constraints were needed for that question
+to be asked.
+
+Put simply, there were more data and more question branches than we
+could deal with in our limited amount of time. We decided to focus on
+the questions on the married vs unmarried branches since that was in
+line with our end goal. Luckily, we found that for both the married and
+unmarried participants they were asked more or less the same question.
+For example, married couples would be asked if they met online, whereas
+couples that weren’t married would be asked an identical question. Due
+to the survey collection method the data was stored in different
+columns. To deal with this problem we used the tidyverse `coalesce`
+function to merge the two columns and get rid of NA values.
+
+There were a myriad of other problems regarding the coding of the data.
+Some examples included: - the dataset was almost entirely categorical
+variables - data was in a STADA format which is proprietary - naming
+conventions of columns required lots of manual lookups - each question
+could also be “refused” - factors had order but were not consistent
+across the dataset
 
 ### Loading and Processing Data
 
@@ -281,7 +310,7 @@ having met their partner online and the age when they met. Similarly,
 there appears to be a positive correlation between meeting someone
 online and being a same sex couple.
 
-### Modelling
+### Modeling
 
 Using some of the factors that we found to have a strong correlation in
 the previous section, we were interested to see if we could create a
@@ -328,12 +357,12 @@ model_ended %>%
     ## # A tibble: 6 x 7
     ##   term                  estimate std.error statistic  p.value conf.low conf.high
     ##   <chr>                    <dbl>     <dbl>     <dbl>    <dbl>    <dbl>     <dbl>
-    ## 1 (Intercept)           -0.666     0.274       -2.43 1.49e- 2 -1.12      -0.215 
-    ## 2 met_online            -0.620     0.245       -2.54 1.12e- 2 -1.03      -0.225 
-    ## 3 ever_lived_together_~ -1.37      0.0904     -15.1  1.33e-51 -1.52      -1.22  
-    ## 4 w6_same_sex_couple     0.798     0.246        3.24 1.19e- 3  0.389      1.20  
-    ## 5 age_when_met           0.00899   0.00658      1.37 1.72e- 1 -0.00188    0.0198
-    ## 6 political_diff         0.221     0.0584       3.79 1.53e- 4  0.124      0.317
+    ## 1 (Intercept)           -0.965     0.268       -3.60 3.24e- 4 -1.41      -0.525 
+    ## 2 met_online            -0.248     0.234       -1.06 2.91e- 1 -0.640      0.132 
+    ## 3 ever_lived_together_~ -1.25      0.0876     -14.3  2.35e-46 -1.40      -1.11  
+    ## 4 w6_same_sex_couple     0.612     0.249        2.46 1.38e- 2  0.198      1.02  
+    ## 5 age_when_met           0.00885   0.00669      1.32 1.86e- 1 -0.00220    0.0198
+    ## 6 political_diff         0.213     0.0577       3.69 2.25e- 4  0.118      0.308
 
 **Observations**: When considering the coefficients for our model we can
 see that there appears to be a negative correlation for meeting someone
@@ -373,7 +402,7 @@ df_validate_summary
     ## # A tibble: 1 x 1
     ##   `mean(percent_correct)`
     ##                     <dbl>
-    ## 1                   0.849
+    ## 1                   0.852
 
 **Observations**: We find that using a log-odds threshold of 0.5% as the
 cutoff for an ending prediction (less than 0.5 indicates staying
@@ -405,8 +434,8 @@ print.data.frame(df_prediction) # use to print the entire dataframe in knitted d
 
     ##   order met_online ever_lived_together_w_partner w6_same_sex_couple
     ## 1     1          0                             1                  0
-    ##   age_when_met political_diff other_date log_odds_ratio  pr_ended
-    ## 1           26              2          0      -1.355986 0.2048935
+    ##   age_when_met political_diff other_date log_odds_ratio pr_ended
+    ## 1           26              2          0      -1.561343 0.173454
     ##   ended_prediction
     ## 1                0
 
@@ -414,4 +443,44 @@ print.data.frame(df_prediction) # use to print the entire dataframe in knitted d
 #df_prediction
 ```
 
-### Remaining Questions
+### Results
+
+While this model is far from perfect it does indicate that certain
+factors can influence whether people are still together. We do not claim
+that this is the best model that could be created from this data. We
+were more interested in the process of creating this model than creating
+the best one. We could imagine taking into account more factors like age
+for better results. One cool thing about this model is that not only do
+we have confidence intervals for each of the coefficients calculated, we
+output a probability at the end. This allows us to see which factors are
+actually important. The final output of a probability is also cool
+because it allows us to compare two predictions side by side with some
+form of uncertainty. Likely the largest amount of uncertainty in this
+dataset is related to how well it fits the population. There were hints
+within the documentation of ways that the survey team tried to normalize
+this. Unfortunately, the documentation wasn’t clear or detailed enough
+for us to use any of the work they had done
+
+### Remaining Questions / Where to next?
+
+This was an eye opening project in several different ways. We ran into
+ethical questions of whether we should model relationships/human
+behavior as well as technical problems related to the whacky survey
+format. We have only scratched the surface of this dataset. There is
+tons more exploration that could be done. For example, the dataset has
+some normalization values to try and make their sample more
+representative of the population – we didn’t factor this into any of our
+calculations. We also chose to look at a very small subset of the
+columns in a discretized way. One example of this is how we look at
+simply the end of marriages as separation or divorce, where the dataset
+differentiates. This means that there are likely many more trends
+present in this data that we didn’t look at.
+
+Here are a few other things that we were interested in exploring: - How
+are the predictors that influence whether relationships end changed with
+age? - Can attributes about a relationship be accurately predicted based
+on other data (aka can we tell which couples met online?) - In what
+cases does our prediction model break - Are there significant
+differences in predictors for lgbt+ couples vs straight couples - What
+are the implications of this work? Do dating apps employ something like
+this and is it alright/biased?
